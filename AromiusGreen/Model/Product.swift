@@ -13,6 +13,10 @@ struct Product: Identifiable {
     var descr: String
     var value: String
     var categories: [String]
+    var manufactureId: Int
+    var manufactureName: String
+    var productLineId: Int
+    var productLineName: String
     var image: String
     var thumbnailImage: String
     var price: Int

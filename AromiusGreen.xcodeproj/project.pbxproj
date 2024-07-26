@@ -19,6 +19,7 @@
 		288A984E2C080C61007ABC1C /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288A984D2C080C61007ABC1C /* InfoView.swift */; };
 		288A98512C080CBC007ABC1C /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288A98502C080CBC007ABC1C /* ImageLoader.swift */; };
 		288A98532C080CD7007ABC1C /* Image+Cashe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288A98522C080CD7007ABC1C /* Image+Cashe.swift */; };
+		289E04682C3A2F06004BE777 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289E04672C3A2F06004BE777 /* TestView.swift */; };
 		28FF49D42C0806AB00FA829C /* AromiusGreen_App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */; };
 		28FF49D62C0806AB00FA829C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FF49D52C0806AB00FA829C /* ContentView.swift */; };
 		28FF49D82C0806AC00FA829C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28FF49D72C0806AC00FA829C /* Assets.xcassets */; };
@@ -35,6 +36,7 @@
 		288A984D2C080C61007ABC1C /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		288A98502C080CBC007ABC1C /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		288A98522C080CD7007ABC1C /* Image+Cashe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Image+Cashe.swift"; sourceTree = "<group>"; };
+		289E04672C3A2F06004BE777 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		28FF49D02C0806AB00FA829C /* AromiusGreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AromiusGreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AromiusGreen_App.swift; sourceTree = "<group>"; };
 		28FF49D52C0806AB00FA829C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,7 +77,9 @@
 		288A98482C080BFF007ABC1C /* View */ = {
 			isa = PBXGroup;
 			children = (
+				28FF49D52C0806AB00FA829C /* ContentView.swift */,
 				288A98492C080C1C007ABC1C /* Home.swift */,
+				289E04672C3A2F06004BE777 /* TestView.swift */,
 				288A984B2C080C40007ABC1C /* ProductView.swift */,
 				288A984D2C080C61007ABC1C /* InfoView.swift */,
 			);
@@ -113,7 +117,6 @@
 			children = (
 				28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */,
 				288A98412C080B2A007ABC1C /* DataManager.swift */,
-				28FF49D52C0806AB00FA829C /* ContentView.swift */,
 				288A98432C080BB6007ABC1C /* Model */,
 				288A98482C080BFF007ABC1C /* View */,
 				288A984F2C080CA2007ABC1C /* Utilities */,
@@ -213,6 +216,7 @@
 			files = (
 				288A984E2C080C61007ABC1C /* InfoView.swift in Sources */,
 				28FF49D62C0806AB00FA829C /* ContentView.swift in Sources */,
+				289E04682C3A2F06004BE777 /* TestView.swift in Sources */,
 				288A98532C080CD7007ABC1C /* Image+Cashe.swift in Sources */,
 				288A98422C080B2A007ABC1C /* DataManager.swift in Sources */,
 				288A98472C080BDC007ABC1C /* Product.swift in Sources */,
@@ -352,7 +356,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"AromiusGreen/Preview Content\"";
 				DEVELOPMENT_TEAM = UN432L4MFG;
 				ENABLE_PREVIEWS = YES;
@@ -371,9 +375,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = VictorZima.AromiusGreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -383,7 +391,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"AromiusGreen/Preview Content\"";
 				DEVELOPMENT_TEAM = UN432L4MFG;
 				ENABLE_PREVIEWS = YES;
@@ -402,9 +410,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = VictorZima.AromiusGreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

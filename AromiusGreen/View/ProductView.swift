@@ -16,7 +16,7 @@ struct ProductView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             
-            VStack {
+            VStack(alignment: .leading) {
                 if item.image.isEmpty {
                     Image(systemName: "photo")
                         .resizable()
@@ -28,32 +28,35 @@ struct ProductView: View {
                         loadedImage
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .background(.gray.opacity(0.075))
                     } else {
                         Image(systemName: "photo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .background(.gray.opacity(0.075))
                             .foregroundColor(.gray)
                             .opacity(0.8)
-                            .frame(width: 100, height: 100)
+                            .frame(maxWidth: .infinity)
                             .onAppear {
                                 Task {
                                     loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
                                 }
                             }
                     }
-//                    AsyncImage(url: URL(string: imageUrl)) { image in
-//                        image
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fit)
-//                    } placeholder: {
-//                        Image(systemName: "photo")
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fit)
-//                            .foregroundColor(.gray)
-//                            .opacity(0.8)
-//                            .frame(width: 100, height: 100)
-//                    }
                 }
+                    
+                VStack(alignment: .leading) {
+                    Text("\(item.name)")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(Color.black)
+                    Text("\(item.manufactureName)")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Color.gray)
+                    Text("\(item.productLineName)")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.gray)
+                }
+//                .padding(.horizontal)
                 
                 HStack(alignment: .center) {
                     Text("₪ ")
@@ -64,38 +67,22 @@ struct ProductView: View {
                         .foregroundStyle(Color.black)
                     Spacer()
                     
-                    Text("ml ")
-                        .font(.footnote)
-                        .foregroundStyle(Color.black)
-                    + Text("\(item.value)")
+                    Text("\(item.value)")
                         .font(.system(size: 15))
                         .foregroundStyle(Color.black)
                 }
-                .padding(.horizontal)
-                .padding(.bottom)
+                .padding(.vertical)
                 
-                Text("\(item.name)")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.black)
-                
-                VStack {
+                VStack(alignment: .leading) {
                     Text(item.descr)
                         .font(.system(size: 15))
                         .foregroundStyle(Color.black)
                 }
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.gray.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 30))
+//                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
+        .padding()
+        .navigationTitle(item.name)
     }
 }
-
-//#Preview {
-//    ProductView(item: Product(name: "Face & eye cream serum For all skin types", descr: "This unique complex of Black pearl powder, seaweed & Dead Sea minerals produces a particularly concentrated cream serum that helps to improve the appearance of the skin’s tone and texture and improves the elasticity of the skin.  The serum penetrates into the deeper skin layers and works from the inside to delay the signs of aging.", value: "200 ml", category: [""], image: "462B9C3A-11F0-4A68-BB51-77131A2FE631.png", thumbnailImage: "", price: 50))
-//
-//        .environmentObject(DataManager())
-//}
 

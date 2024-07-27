@@ -54,7 +54,7 @@ struct InfoView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
             
-            Image("shop1")
+            Image("shop2")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 30))

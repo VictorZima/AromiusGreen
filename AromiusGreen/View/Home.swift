@@ -53,14 +53,6 @@ struct Home: View {
                     }
                 }
             }
-//            .onAppear {
-//                if dataManager.products.isEmpty {
-//                    dataManager.fetchProducts()
-//                }
-//            }
-//            .refreshable {
-//                dataManager.fetchProducts()
-//            }
         }
     }
     

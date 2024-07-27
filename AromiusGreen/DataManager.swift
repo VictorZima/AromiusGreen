@@ -16,13 +16,12 @@ class DataManager: ObservableObject {
     
     init() {
         fetchCategories()
-//        fetchProducts()
         addProductsListener()
-        
     }
+    
     deinit {
-           productsListener?.remove()
-       }
+        productsListener?.remove()
+    }
     
     func addProductsListener() {
             let db = Firestore.firestore()
@@ -55,40 +54,6 @@ class DataManager: ObservableObject {
                 }
             }
         }
-//    func fetchProducts() {
-//        products.removeAll()
-//        
-//        let db = Firestore.firestore()
-//        let collectionRef = db.collection("items")
-//        let query: Query = collectionRef
-//        
-//        query.getDocuments { snapshot, error in
-//            guard error == nil else {
-//                print(error!.localizedDescription)
-//                return
-//            }
-//            
-//            if let snapshot = snapshot {
-//                for document in snapshot.documents {
-//                    let data = document.data()
-//                    let title = data["title"] as? String ?? ""
-//                    let descr = data["description"] as? String ?? ""
-//                    let value = data["value"] as? String ?? ""
-//                    let image = data["image"] as? String ?? ""
-//                    let thumbnailImage = data["thumbnailImage"] as? String ?? ""
-//                    let price = data["price"] as? Int ?? 0
-//                    let categories = data["categoryIds"] as? [String] ?? []
-//                    let manufactureId = data["manufactureId"] as? Int ?? 0
-//                    let manufactureName = data["manufactureName"] as? String ?? ""
-//                    let productLineId = data["productLineId"] as? Int ?? 0
-//                    let productLineName = data["productLineName"] as? String ?? ""
-//                    let product = Product(name: title, descr: descr, value: value, categories: categories, manufactureId: manufactureId, manufactureName: manufactureName, productLineId: productLineId, productLineName: productLineName,image: image, thumbnailImage: thumbnailImage, price: price)
-//                    
-//                    self.products.append(product)
-//                }
-//            }
-//        }
-//    }
     
     func fetchCategories() {
         categories.removeAll()

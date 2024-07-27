@@ -17,12 +17,6 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                 }
-            //            FavoritesView()
-            //                .tabItem {
-            //                    VStack {
-            //                        Image(systemName: "heart.fill")
-            //                    }
-            //                }
             InfoView()
                 .tabItem {
                     VStack {
@@ -31,7 +25,6 @@ struct ContentView: View {
                 }
         }
         .tint(.darkBlueItem)
-
     }
 }
 

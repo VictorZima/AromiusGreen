@@ -56,7 +56,6 @@ struct ProductView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(Color.gray)
                 }
-//                .padding(.horizontal)
                 
                 HStack(alignment: .center) {
                     Text("₪ ")
@@ -78,7 +77,6 @@ struct ProductView: View {
                         .font(.system(size: 15))
                         .foregroundStyle(Color.black)
                 }
-//                .padding(.horizontal)
             }
         }
         .padding()

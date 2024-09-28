@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var cartManager: CartManager
     
     var body: some View {
         TabView {
@@ -17,12 +20,31 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                 }
+            FavoritesView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: "suit.heart.fill")
+                    }
+                }
             InfoView()
                 .tabItem {
                     VStack {
                         Image(systemName: "map")
                     }
                 }
+            ProfileView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: "person")
+                    }
+                }
+            CartView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: "cart")
+                    }
+                }
+                .badge(cartManager.cartItems.count > 0 ? "\(cartManager.cartItems.count)" : nil)
         }
         .tint(.darkBlueItem)
     }
@@ -31,4 +53,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(DataManager())
+        .environmentObject(AuthManager())
+        .environmentObject(CartManager())
 }

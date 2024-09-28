@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct Home: View {
+//    @EnvironmentObject var authManager: AuthManager
+//    @State private var isShowingSettings = false
+//    @State private var isShowingAuth = false
     @EnvironmentObject var dataManager: DataManager
     @State private var selectedCategory = "0"
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
@@ -16,39 +19,23 @@ struct Home: View {
         if selectedCategory == "0" {
             return dataManager.products
         } else {
-            return dataManager.products.filter { $0.categories.contains(selectedCategory) }
+            return dataManager.products.filter { $0.categoryIds.contains(selectedCategory) }
         }
     }
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack {
-                    HStack {
-                        Text("Dead Sea Cosmetics\nfrom")
-                            .font(.system(size: 18))
-                        + Text(" AROMIUS")
-                            .foregroundColor(.darkBlueItem)
-                            .font(.system(size: 20, weight: .bold))
-                        + Text(" shop")
-                            .font(.system(size: 18))
-
-                        Spacer()
-                        Image(systemName: "leaf")
-                            .foregroundColor(.green)
-                            .imageScale(.large)
-                            .padding()
-                            .frame(width: 50, height: 75)
-                            .overlay(RoundedRectangle(cornerRadius: 20).stroke().opacity(0.2).foregroundColor(.green))
-                    }
-                    .padding(30)
-                    
-                    CategoryListView
-                        .padding(.bottom)
-                    
-                    LazyVGrid(columns: columns, spacing: 3) {
-                        ForEach(filteredProducts, id: \.id) { item in
-                            ProductCard(product: item)
+            VStack {
+                HeaderRow()
+                ScrollView {
+                    VStack {
+                        CategoryListView
+                            .padding(.bottom)
+                        
+                        LazyVGrid(columns: columns, spacing: 3) {
+                            ForEach(filteredProducts, id: \.id) { item in
+                                ProductCard(product: item)
+                            }
                         }
                     }
                 }
@@ -91,6 +78,29 @@ struct Home: View {
             .padding(.leading, 15)
         }
     }
+    
+//    var personButton: some View {
+//        Button(action: {
+//            if authManager.isUserAuthenticated {
+//                isShowingSettings = true
+//            } else {
+//                isShowingAuth = true
+//            }
+//        }) {
+//            Image(systemName: "person.and.background.dotted")
+//                .foregroundColor(.green)
+//                .imageScale(.large)
+//                .frame(width: 60, height: 50)
+//                .overlay(RoundedRectangle(cornerRadius: 17).stroke().opacity(0.2).foregroundColor(.green))
+//        }
+//        .sheet(isPresented: $isShowingSettings) {
+//            ProfileView()
+//        }
+//        .sheet(isPresented: $isShowingAuth) {
+//            AuthView()
+//                .environmentObject(authManager)
+//        }
+//    }
 }
 
 struct ProductCard: View {
@@ -100,7 +110,8 @@ struct ProductCard: View {
     
     var body: some View {
         NavigationLink {
-            ProductView(item: product)
+            ProductView(productId: product.id)
+//            ProductView(item: product)
         } label: {
             VStack(alignment: .leading) {
                 let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
@@ -110,16 +121,14 @@ struct ProductCard: View {
                     loadedImage
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                    //                            .background(.clear)
-                        .background(Color.gray.opacity(0.075))
-                        .frame(maxWidth: .infinity)
+                        .background(.gray.opacity(0.075))
                 } else {
                     Image(systemName: "photo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+                        .background(.gray.opacity(0.075))
                         .foregroundColor(.gray)
                         .opacity(0.8)
-                        .background(Color.gray.opacity(0.075))
                         .frame(maxWidth: .infinity)
                         .onAppear {
                             Task {
@@ -150,14 +159,34 @@ struct ProductCard: View {
                     }
 
                     HStack(alignment: .center) {
-                        Text("₪ ")
-                            .font(.footnote)
-                            .foregroundStyle(Color.black)
-                        + Text("\(product.price)")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.black)
+                        if product.price.truncatingRemainder(dividingBy: 1) == 0 {
+                            Text("₪ \(Int(product.price))")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color.black)
+                        } else {
+                            let priceComponents = String(format: "%.2f", product.price).split(separator: ".")
+
+                            HStack(alignment: .top, spacing: 0) {
+                                Text("₪ \(priceComponents[0])")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color.black)
+                                
+                                Text("\(priceComponents[1])")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(Color.gray)
+                                    .baselineOffset(15)
+                                    .overlay(
+                                        Rectangle()
+                                            .frame(height: 1)
+                                            .offset(y: -15),
+                                        alignment: .bottom
+                                    )
+                                    .foregroundStyle(Color.gray)
+                                    .offset(y: -7)
+                            }
+                        }
                     }
-                    .padding(.top, 6)
+                    .padding(.top, 10)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 15)

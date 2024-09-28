@@ -12,14 +12,14 @@ struct InfoView: View {
         VStack {
             Text("**Bat Yam**")
             .font(.system(size: 20))
-            .foregroundStyle(Color.darkBlueItem)
+            .foregroundColor(Color.darkBlueItem)
             +
             Text(" city")
-                .foregroundStyle(Color.primary)
+                .foregroundColor(Color.primary)
             
             HStack(alignment: .top) {
                 Image(systemName: "mappin.and.ellipse")
-                    .foregroundStyle(Color.green)
+                    .foregroundColor(Color.green)
                 Text("Balfur str, 87")
                     .font(.body)
                 

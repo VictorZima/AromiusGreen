@@ -133,7 +133,7 @@ struct ProfileView: View {
                 EditProfileView(isPresented: $isEditingProfile)
             }
             .sheet(isPresented: $isShowingAuthView) {
-                AuthView()
+                AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)
             }
         }

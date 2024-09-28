@@ -10,13 +10,11 @@ import Firebase
 
 class CartManager: ObservableObject {
     @Published var cartItems: [CartItem] = []
-//    @EnvironmentObject var authManager: AuthManager
     
     init() {
         loadCartFromDatabase()
     }
 
-    // Метод для добавления товара в корзину
     func addToCart(product: Product, quantity: Int = 1) {
 //        guard authManager.isUserAuthenticated else {
 //            print("User needs to sign in or register to add items to the cart.")
@@ -38,7 +36,6 @@ class CartManager: ObservableObject {
         saveCartToDatabase()
     }
     
-    // Метод для увеличения количества товара
      func increaseQuantity(of productId: UUID) {
          if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
              cartItems[index].quantity += 1
@@ -46,7 +43,6 @@ class CartManager: ObservableObject {
          }
      }
 
-     // Метод для уменьшения количества товара
      func decreaseQuantity(of productId: UUID) {
          if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
              if cartItems[index].quantity > 1 {
@@ -59,7 +55,6 @@ class CartManager: ObservableObject {
          }
      }
 
-     // Метод для удаления товара из корзины
      func removeFromCart(productId: UUID) {
          if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
              cartItems.remove(at: index)
@@ -67,12 +62,10 @@ class CartManager: ObservableObject {
          }
      }
     
-    // Метод для подсчета общей стоимости товаров в корзине
     func totalPrice() -> Double {
         return cartItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 
-    // Метод для сохранения корзины в базе данных Firebase
     private func saveCartToDatabase() {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
@@ -99,7 +92,6 @@ class CartManager: ObservableObject {
         }
     }
 
-    // Метод для загрузки корзины из базы данных Firebase
     func loadCartFromDatabase() {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {

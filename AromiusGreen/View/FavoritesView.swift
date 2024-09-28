@@ -76,7 +76,7 @@ struct FavoritesView: View {
             }
         }
         .sheet(isPresented: $isShowingAuthView) {
-            AuthView()
+            AuthView(isShowingAuthView: $isShowingAuthView)
                 .environmentObject(authManager)
         }
     }

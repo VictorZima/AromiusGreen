@@ -39,9 +39,10 @@ struct CartView: View {
                                 .font(.headline)
                         }
                         .padding()
-                        Button(action: {
-                            // Действие для оформления заказа
-                        }) {
+                        
+                        NavigationLink {
+                            UnderConstructionView()
+                        } label: {
                             Text("Proceed to Checkout")
                                 .foregroundColor(.white)
                                 .padding()
@@ -80,7 +81,7 @@ struct CartView: View {
             }
             .navigationTitle("Your Cart")
             .sheet(isPresented: $isShowingAuthView) {
-                AuthView()
+                AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)
             }
         }

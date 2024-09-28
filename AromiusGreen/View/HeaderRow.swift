@@ -10,7 +10,7 @@ import SwiftUI
 struct HeaderRow: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var isShowingSettings = false
-    @State private var isShowingAuth = false
+    @State private var isShowingAuthView = false
     
     var body: some View {
         HStack {
@@ -33,7 +33,7 @@ struct HeaderRow: View {
             if authManager.isUserAuthenticated {
                 isShowingSettings = true
             } else {
-                isShowingAuth = true
+                isShowingAuthView = true
             }
         }) {
             Image(systemName: "person.and.background.dotted")
@@ -45,8 +45,8 @@ struct HeaderRow: View {
         .sheet(isPresented: $isShowingSettings) {
             ProfileView()
         }
-        .sheet(isPresented: $isShowingAuth) {
-            AuthView()
+        .sheet(isPresented: $isShowingAuthView) {
+            AuthView(isShowingAuthView: $isShowingAuthView)
                 .environmentObject(authManager)
         }
     }

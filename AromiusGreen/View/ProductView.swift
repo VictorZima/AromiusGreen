@@ -14,6 +14,7 @@ struct ProductView: View {
     @State private var product: Product?
     @State private var loadedImage: Image?
     @State private var isFavorite = false
+    @State private var isShowingAuthView = false
     var productId: UUID
     let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
     
@@ -126,7 +127,11 @@ struct ProductView: View {
                         }
                         
                         Button {
-                            cartManager.addToCart(product: item)
+                            if dataManager.currentUserId.isEmpty {
+                                isShowingAuthView = true
+                            } else {
+                                cartManager.addToCart(product: item)
+                            }
                         } label: {
                             HStack {
                                 Image(systemName: "cart")
@@ -155,6 +160,9 @@ struct ProductView: View {
             if dataManager.currentUserId.isEmpty == false {
                 checkIfFavorite()
             }
+        }
+        .sheet(isPresented: $isShowingAuthView) {
+            AuthView(isShowingAuthView: $isShowingAuthView)
         }
     }
     

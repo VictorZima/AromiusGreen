@@ -17,9 +17,12 @@ struct AuthView: View {
     @State private var confirmPassword = ""
     @State private var errorMessage: String?
     @State private var isRegistration = false
+    @Binding var isShowingAuthView: Bool
     
     var body: some View {
         VStack {
+            Text("Create an account or log in to enjoy all the benefits: add products to your cart and favorites, receive notifications about special offers and discounts, and more!")
+                .padding()
             Text(isRegistration ? "Create Account" : "Log In")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
@@ -128,6 +131,6 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView()
+    AuthView(isShowingAuthView: .constant(false))
         .environmentObject(AuthManager())
 }

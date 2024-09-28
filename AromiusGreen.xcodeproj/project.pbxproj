@@ -40,6 +40,7 @@
 		28AB8DEA2C796EB9006A81C5 /* HeaderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AB8DE92C796EB9006A81C5 /* HeaderRow.swift */; };
 		28AB8DEC2C7C1F82006A81C5 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AB8DEB2C7C1F82006A81C5 /* EditProfileView.swift */; };
 		28AB8DEE2C7C2346006A81C5 /* AppUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AB8DED2C7C2346006A81C5 /* AppUser.swift */; };
+		28BE1EF12CA7EFB00059BC01 /* UnderConstructionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BE1EF02CA7EFB00059BC01 /* UnderConstructionView.swift */; };
 		28F7D0B62C8F2B2A0065785C /* AdminView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F7D0B52C8F2B2A0065785C /* AdminView.swift */; };
 		28FF49D42C0806AB00FA829C /* AromiusGreen_App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */; };
 		28FF49D62C0806AB00FA829C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FF49D52C0806AB00FA829C /* ContentView.swift */; };
@@ -77,6 +78,7 @@
 		28AB8DE92C796EB9006A81C5 /* HeaderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderRow.swift; sourceTree = "<group>"; };
 		28AB8DEB2C7C1F82006A81C5 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
 		28AB8DED2C7C2346006A81C5 /* AppUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUser.swift; sourceTree = "<group>"; };
+		28BE1EF02CA7EFB00059BC01 /* UnderConstructionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnderConstructionView.swift; sourceTree = "<group>"; };
 		28F7D0B52C8F2B2A0065785C /* AdminView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminView.swift; sourceTree = "<group>"; };
 		28FF49D02C0806AB00FA829C /* AromiusGreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AromiusGreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AromiusGreen_App.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				288A984D2C080C61007ABC1C /* InfoView.swift */,
 				28AB8DDB2C718B6D006A81C5 /* ProfileView.swift */,
 				28AB8DEB2C7C1F82006A81C5 /* EditProfileView.swift */,
+				28BE1EF02CA7EFB00059BC01 /* UnderConstructionView.swift */,
 				288762C42C9094BA00886A66 /* Admin */,
 			);
 			path = View;
@@ -311,6 +314,7 @@
 				28AB8DEE2C7C2346006A81C5 /* AppUser.swift in Sources */,
 				288762CE2C930ED800886A66 /* Double+Extensions.swift in Sources */,
 				288762C32C9093F700886A66 /* AllProductsView.swift in Sources */,
+				28BE1EF12CA7EFB00059BC01 /* UnderConstructionView.swift in Sources */,
 				28915EB82CA4E87500F7F04E /* CartItemCellView.swift in Sources */,
 				28AB8DDC2C718B6D006A81C5 /* ProfileView.swift in Sources */,
 				288A984A2C080C1C007ABC1C /* Home.swift in Sources */,
@@ -447,7 +451,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"AromiusGreen/Preview Content\"";
 				DEVELOPMENT_TEAM = UN432L4MFG;
 				ENABLE_PREVIEWS = YES;
@@ -484,7 +488,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"AromiusGreen/Preview Content\"";
 				DEVELOPMENT_TEAM = UN432L4MFG;
 				ENABLE_PREVIEWS = YES;

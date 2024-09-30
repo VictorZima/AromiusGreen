@@ -44,7 +44,7 @@ struct ContentView: View {
                         Image(systemName: "cart")
                     }
                 }
-                .badge(cartManager.cartItems.count > 0 ? "\(cartManager.cartItems.count)" : nil)
+                .badge(authManager.isUserAuthenticated && cartManager.cartItems.count > 0 ? "\(cartManager.cartItems.count)" : nil)
         }
         .tint(.darkBlueItem)
     }

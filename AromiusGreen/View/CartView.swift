@@ -11,7 +11,10 @@ struct CartView: View {
     @EnvironmentObject var cartManager: CartManager
     @EnvironmentObject var authManager: AuthManager
     @State private var isShowingAuthView = false
-
+    @State private var selectedDeliveryMethod = "Self-pickup"
+    let deliveryMethods = ["Self-pickup", "Paid delivery"]
+    @State private var deliveryCost: Double = 0.0
+    
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 1)
     
     var body: some View {
@@ -31,12 +34,50 @@ struct CartView: View {
                             }
                         }
                         
-                        HStack {
-                            Text("Total:")
-                                .font(.headline)
-                            Spacer()
-                            Text("\(cartManager.totalPrice().formattedPrice()) ₪")
-                                .font(.headline)
+                        VStack {
+                            HStack {
+                                Text("Delivery")
+                                Spacer()
+                                Picker("Delivery Method", selection: $selectedDeliveryMethod) {
+                                    ForEach(deliveryMethods, id: \.self) {
+                                        Text($0)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .onChange(of: selectedDeliveryMethod) { method in
+                                    if method == "Paid delivery" {
+                                        deliveryCost = 30.0
+                                    } else {
+                                        deliveryCost = 0.0
+                                    }
+                                }
+                            }
+                            .padding(.bottom)
+                            
+                            
+                            HStack {
+                                Text("Total without delivery:")
+                                    .font(.headline)
+                                Spacer()
+                                Text("\(cartManager.totalPrice().formattedPrice()) ₪")
+                                    .font(.headline)
+                            }
+                            
+                            HStack {
+                                Text("Delivery Cost:")
+                                    .font(.headline)
+                                Spacer()
+                                Text("\(deliveryCost, specifier: "%.2f") ₪")
+                                    .font(.headline)
+                            }
+                            
+                            HStack {
+                                Text("Total with delivery:")
+                                    .font(.headline)
+                                Spacer()
+                                Text("\((cartManager.totalPrice() + deliveryCost).formattedPrice()) ₪")
+                                    .font(.headline)
+                            }
                         }
                         .padding()
                         

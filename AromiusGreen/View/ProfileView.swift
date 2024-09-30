@@ -101,12 +101,8 @@ struct ProfileView: View {
                     .navigationTitle("Settings")
                 } else {
                     VStack(spacing: 20) {
-                        Text("Сохраните свои любимые товары в избранное!")
-                            .font(.title)
-                            .multilineTextAlignment(.center)
-                            .padding()
                         
-                        Text("Создайте учетную запись или войдите, чтобы сохранить товары в избранное и легко находить их позже.")
+                        Text("Create an account or log in to enjoy all the benefits: add products to your cart and favorites, receive notifications about special offers and discounts, and more!.")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()

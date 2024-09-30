@@ -184,6 +184,11 @@ struct ProductView: View {
     }
     
     func toggleFavorite() {
+        if dataManager.currentUserId.isEmpty {
+            isShowingAuthView = true
+            return
+        }
+        
         guard let item = product else { return }
         if isFavorite {
             dataManager.removeFromFavorites(productId: item.id)

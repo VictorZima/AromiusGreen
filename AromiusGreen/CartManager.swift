@@ -16,13 +16,27 @@ class CartManager: ObservableObject {
     }
 
     func addToCart(product: Product, quantity: Int = 1) {
-//        guard authManager.isUserAuthenticated else {
-//            print("User needs to sign in or register to add items to the cart.")
-//            return
-//        }
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован, корзина не будет сохранена.")
+            return
+        }
+        
+        let cartRef = db.collection("users").document(userId).collection("carts")
         
         if let index = cartItems.firstIndex(where: { $0.productId == product.id }) {
             cartItems[index].quantity += quantity
+            
+            let updatedItem = cartItems[index]
+            cartRef.document(updatedItem.id.uuidString).updateData([
+                "quantity": updatedItem.quantity
+            ]) { error in
+                if let error = error {
+                    print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                } else {
+                    print("Количество товара успешно обновлено")
+                }
+            }
         } else {
             let newItem = CartItem(
                 productId: product.id,
@@ -32,14 +46,26 @@ class CartManager: ObservableObject {
                 thumbnailImage: product.thumbnailImage
             )
             cartItems.append(newItem)
+            cartRef.document(newItem.id.uuidString).setData([
+                "productId": newItem.productId.uuidString,
+                "name": newItem.name,
+                "price": newItem.price,
+                "quantity": newItem.quantity,
+                "thumbnailImage": newItem.thumbnailImage
+            ]) { error in
+                if let error = error {
+                    print("Ошибка при добавлении товара: \(error.localizedDescription)")
+                } else {
+                    print("Товар успешно добавлен в корзину")
+                }
+            }
         }
-        saveCartToDatabase()
     }
     
      func increaseQuantity(of productId: UUID) {
          if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
              cartItems[index].quantity += 1
-             saveCartToDatabase()
+//             saveCartToDatabase()
          }
      }
 
@@ -51,14 +77,14 @@ class CartManager: ObservableObject {
                  // Если количество товара становится 0, удаляем его из корзины
                  cartItems.remove(at: index)
              }
-             saveCartToDatabase()
+//             saveCartToDatabase()
          }
      }
 
      func removeFromCart(productId: UUID) {
          if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
              cartItems.remove(at: index)
-             saveCartToDatabase()
+//             saveCartToDatabase()
          }
      }
     
@@ -66,31 +92,31 @@ class CartManager: ObservableObject {
         return cartItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 
-    private func saveCartToDatabase() {
-        let db = Firestore.firestore()
-        guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не будет сохранена.")
-            return
-        }
-        
-        let cartData = cartItems.map { item in
-            return [
-                "productId": item.productId.uuidString,
-                "name": item.name,
-                "price": item.price,
-                "quantity": item.quantity,
-                "thumbnailImage": item.thumbnailImage
-            ] as [String: Any]
-        }
-        
-        db.collection("carts").document(userId).setData(["items": cartData]) { error in
-            if let error = error {
-                print("Ошибка при сохранении корзины: \(error.localizedDescription)")
-            } else {
-                print("Корзина успешно сохранена")
-            }
-        }
-    }
+//    private func saveCartToDatabase() {
+//        let db = Firestore.firestore()
+//        guard let userId = Auth.auth().currentUser?.uid else {
+//            print("Пользователь не авторизован, корзина не будет сохранена.")
+//            return
+//        }
+//        
+//        let cartData = cartItems.map { item in
+//            return [
+//                "productId": item.productId.uuidString,
+//                "name": item.name,
+//                "price": item.price,
+//                "quantity": item.quantity,
+//                "thumbnailImage": item.thumbnailImage
+//            ] as [String: Any]
+//        }
+//        
+//        db.collection("carts").document(userId).setData(["items": cartData]) { error in
+//            if let error = error {
+//                print("Ошибка при сохранении корзины: \(error.localizedDescription)")
+//            } else {
+//                print("Корзина успешно сохранена")
+//            }
+//        }
+//    }
 
     func loadCartFromDatabase() {
         let db = Firestore.firestore()
@@ -98,29 +124,32 @@ class CartManager: ObservableObject {
             print("Пользователь не авторизован, корзина не может быть загружена.")
             return
         }
-
-        db.collection("carts").document(userId).getDocument { document, error in
-            if let document = document, document.exists {
-                if let cartData = document.data()?["items"] as? [[String: Any]] {
-                    self.cartItems = cartData.compactMap { data in
-                        guard let productIdString = data["productId"] as? String,
-                              let productId = UUID(uuidString: productIdString),
-                              let name = data["name"] as? String,
-                              let price = data["price"] as? Double,
-                              let quantity = data["quantity"] as? Int,
-                              let thumbnailImage = data["thumbnailImage"] as? String else { return nil }
-                        
-                        return CartItem(
-                            productId: productId,
-                            name: name,
-                            price: price,
-                            quantity: quantity,
-                            thumbnailImage: thumbnailImage
-                        )
-                    }
+        
+        let cartRef = db.collection("users").document(userId).collection("carts")
+        
+        cartRef.getDocuments { snapshot, error in
+            if let error = error {
+                print("Ошибка при загрузке корзины: \(error.localizedDescription)")
+                return
+            }
+            
+            if let snapshot = snapshot {
+                self.cartItems = snapshot.documents.compactMap { document in
+                    guard let productIdString = document["productId"] as? String,
+                          let productId = UUID(uuidString: productIdString),
+                          let name = document["name"] as? String,
+                          let price = document["price"] as? Double,
+                          let quantity = document["quantity"] as? Int,
+                          let thumbnailImage = document["thumbnailImage"] as? String else { return nil }
+                    
+                    return CartItem(
+                        productId: productId,
+                        name: name,
+                        price: price,
+                        quantity: quantity,
+                        thumbnailImage: thumbnailImage
+                    )
                 }
-            } else {
-                print("Ошибка при загрузке корзины: \(error?.localizedDescription ?? "Неизвестная ошибка")")
             }
         }
     }

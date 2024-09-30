@@ -109,6 +109,7 @@ struct ProductCell: View {
                         .opacity(0.8)
                         .frame(maxWidth: .infinity)
                         .onAppear {
+                            
                             Task {
                                 loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
                             }

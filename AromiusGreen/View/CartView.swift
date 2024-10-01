@@ -32,67 +32,71 @@ struct CartView: View {
                                     CartItemCellView(item: item)
                                 }
                             }
-                        }
-                        
-                        VStack {
-                            HStack {
-                                Text("Delivery")
-                                Spacer()
-                                Picker("Delivery Method", selection: $selectedDeliveryMethod) {
-                                    ForEach(deliveryMethods, id: \.self) {
-                                        Text($0)
+                            
+                            VStack {
+                                HStack {
+                                    Text("Delivery")
+                                    Spacer()
+                                    Picker("Delivery Method", selection: $selectedDeliveryMethod) {
+                                        ForEach(deliveryMethods, id: \.self) {
+                                            Text($0)
+                                        }
+                                    }
+                                    .pickerStyle(MenuPickerStyle())
+                                    .onChange(of: selectedDeliveryMethod) { method in
+                                        if method == "Paid delivery" {
+                                            deliveryCost = 30.0
+                                        } else {
+                                            deliveryCost = 0.0
+                                        }
                                     }
                                 }
-                                .pickerStyle(MenuPickerStyle())
-                                .onChange(of: selectedDeliveryMethod) { method in
-                                    if method == "Paid delivery" {
-                                        deliveryCost = 30.0
-                                    } else {
-                                        deliveryCost = 0.0
-                                    }
+                                .padding(.bottom)
+                                
+                                Spacer()
+                                HStack {
+                                    Text("Total without delivery:")
+                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(cartManager.totalPrice().formattedPrice()) ₪")
+                                        .font(.headline)
                                 }
+                                
+                                HStack {
+                                    Text("Delivery Cost:")
+                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(deliveryCost, specifier: "%.2f") ₪")
+                                        .font(.headline)
+                                }
+                                
+                                HStack {
+                                    Text("Total with delivery:")
+                                        .font(.headline)
+                                    Spacer()
+                                    Text("\((cartManager.totalPrice() + deliveryCost).formattedPrice()) ₪")
+                                        .font(.headline)
+                                }
+                                
+                                NavigationLink {
+                                    UnderConstructionView()
+                                } label: {
+                                    Text("Proceed to Checkout")
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.blue)
+                                        .cornerRadius(10)
+                                }
+                                .padding(.horizontal)
+                                .padding(.bottom, 6)
                             }
-                            .padding(.bottom)
+                            .padding()
                             
-                            
-                            HStack {
-                                Text("Total without delivery:")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(cartManager.totalPrice().formattedPrice()) ₪")
-                                    .font(.headline)
-                            }
-                            
-                            HStack {
-                                Text("Delivery Cost:")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(deliveryCost, specifier: "%.2f") ₪")
-                                    .font(.headline)
-                            }
-                            
-                            HStack {
-                                Text("Total with delivery:")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\((cartManager.totalPrice() + deliveryCost).formattedPrice()) ₪")
-                                    .font(.headline)
-                            }
+                            .navigationTitle("Cart")
                         }
-                        .padding()
                         
-                        NavigationLink {
-                            UnderConstructionView()
-                        } label: {
-                            Text("Proceed to Checkout")
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
-                        .navigationTitle("Cart")
+                        
                     }
                 } else {
                     VStack(spacing: 20) {

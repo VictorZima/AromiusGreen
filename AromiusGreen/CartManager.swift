@@ -62,31 +62,100 @@ class CartManager: ObservableObject {
         }
     }
     
-     func increaseQuantity(of productId: UUID) {
-         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
-             cartItems[index].quantity += 1
-//             saveCartToDatabase()
-         }
-     }
+    func increaseQuantity(of productId: UUID) {
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован, корзина не будет сохранена.")
+            return
+        }
+        
+        let cartRef = db.collection("users").document(userId).collection("carts")
+        
+        if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
+            // Увеличиваем количество
+            cartItems[index].quantity += 1
+            
+            let updatedItem = cartItems[index]
+            
+            // Обновляем количество в Firestore
+            cartRef.document(updatedItem.id.uuidString).updateData([
+                "quantity": updatedItem.quantity
+            ]) { error in
+                if let error = error {
+                    print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                } else {
+                    print("Количество товара успешно увеличено")
+                }
+            }
+        }
+    }
 
-     func decreaseQuantity(of productId: UUID) {
-         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
-             if cartItems[index].quantity > 1 {
-                 cartItems[index].quantity -= 1
-             } else {
-                 // Если количество товара становится 0, удаляем его из корзины
-                 cartItems.remove(at: index)
-             }
-//             saveCartToDatabase()
-         }
-     }
+    func decreaseQuantity(of productId: UUID) {
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован, корзина не будет сохранена.")
+            return
+        }
+        
+        let cartRef = db.collection("users").document(userId).collection("carts")
+        
+        if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
+            if cartItems[index].quantity > 1 {
+                cartItems[index].quantity -= 1
+                
+                let updatedItem = cartItems[index]
+                cartRef.document(updatedItem.id.uuidString).updateData([
+                    "quantity": updatedItem.quantity
+                ]) { error in
+                    if let error = error {
+                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                    } else {
+                        print("Количество товара успешно увеличено")
+                    }
+                }
+            } else {
+                // Если количество равно 1, удаляем товар
+                let documentId = cartItems[index].id.uuidString
+                cartRef.document(documentId).delete { [weak self] error in
+                    if let error = error {
+                        print("Ошибка при удалении товара: \(error.localizedDescription)")
+                    } else {
+                        print("Товар успешно удален из Firestore")
+                        self?.cartItems.remove(at: index)
+                    }
+                }
+            }
+        } else {
+            print("Товар с таким ID не найден в корзине")
+        }
+    }
 
-     func removeFromCart(productId: UUID) {
-         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
-             cartItems.remove(at: index)
-//             saveCartToDatabase()
-         }
-     }
+    func removeFromCart(productId: UUID) {
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован, корзина не будет сохранена.")
+            return
+        }
+        
+        let cartRef = db.collection("users").document(userId).collection("carts")
+        
+        if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
+            let itemId = cartItems[index].id.uuidString
+            
+            // Сначала пытаемся удалить из базы данных
+            cartRef.document(itemId).delete { [weak self] error in
+                if let error = error {
+                    print("Ошибка при удалении товара из корзины: \(error.localizedDescription)")
+                } else {
+                    print("Товар успешно удален из корзины в базе данных")
+                    // Только после успешного удаления из базы удаляем из локального массива
+                    self?.cartItems.remove(at: index)
+                }
+            }
+        } else {
+            print("Товар с таким ID не найден в корзине")
+        }
+    }
     
     func totalPrice() -> Double {
         return cartItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
@@ -143,6 +212,7 @@ class CartManager: ObservableObject {
                           let thumbnailImage = document["thumbnailImage"] as? String else { return nil }
                     
                     return CartItem(
+                        id: UUID(uuidString: document.documentID) ?? UUID(),
                         productId: productId,
                         name: name,
                         price: price,

@@ -18,7 +18,6 @@ struct ProfileView: View {
         NavigationView {
             VStack {
                 if let user = authManager.currentUser {
-                    // Фото пользователя
                     if let photoURL = user.photo, let url = URL(string: photoURL) {
                         AsyncImage(url: url) { image in
                             image
@@ -41,46 +40,83 @@ struct ProfileView: View {
                             .padding(.vertical, 20)
                     }
                     
-                    // Имя пользователя
                     Text(user.fullName)
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    // Страна и город пользователя
                     Text("\(user.city), \(user.country)")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
-                    Button(action: {
+                    Button {
                         isEditingProfile = true
-                    }) {
+                    } label: {
                         Text("Edit Profile")
-                            .foregroundColor(.blue)
+                            .foregroundColor(Color.darkBlueItem)
                             .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
+                            .background(Color.clear)
+                            .cornerRadius(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.darkBlueItem, lineWidth: 1)
+                            )
                     }
-                    .padding(.top, 20)
+                    .padding(.bottom, 20)
                     .padding(.horizontal, 40)
                     
-                    if authManager.currentUser?.isAdmin == true {
-                        NavigationLink(destination: AdminView()) {
-                            HStack {
-                                Image(systemName: "gearshape.2")
-                                Text("Manage Store")
+                    HStack(alignment: .center, spacing: 5) {
+                        if authManager.currentUser?.isAdmin == true {
+                            NavigationLink {
+                                AdminView()
+                            } label: {
+                                VStack {
+                                    Image(systemName: "storefront")
+                                        .foregroundStyle(Color.darkBlueItem)
+                                        .font(.title2)
+                                    Text("My Store")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.darkBlueItem)
+                                }
+                                .frame(width: 70, height: 70)
                             }
-                            .foregroundColor(.blue)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
                         }
-                        .padding(.top, 10)
-                        .padding(.horizontal, 40)
-
+                        Divider()
+                            .frame(width: 1, height: 60)
+                            .background(Color.lightBlue)
+                        
+                        NavigationLink {
+                            OrdersView()
+                        } label: {
+                            VStack {
+                                Image(systemName: "shippingbox")
+                                    .foregroundStyle(Color.darkBlueItem)
+                                    .font(.title2)
+                                Text("Orders")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.darkBlueItem)
+                            }
+                            .frame(width: 70, height: 70)
+                        }
+                        Divider()
+                            .frame(width: 1, height: 60)
+                            .background(Color.lightBlue)
+                        
+//                        NavigationLink {
+//                        
+//                        } label: {
+//                            VStack {
+//                                Image(systemName: "gearshape.2")
+//                                    .foregroundStyle(Color.darkBlueItem)
+//                                    .font(.title2)
+//                                Text("Settings")
+//                                    .font(.subheadline)
+//                                    .foregroundStyle(Color.darkBlueItem)
+//                            }
+//                            .frame(width: 70, height: 70)
+//                        }
+                        
                     }
-                    
+                    .padding(.horizontal, 20)
                     Spacer()
                     
                     Button(action: signOut) {
@@ -143,4 +179,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
+        .environmentObject(AuthManager())
 }

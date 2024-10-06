@@ -223,4 +223,36 @@ class CartManager: ObservableObject {
             }
         }
     }
+    
+    func clearCart() {
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован, корзина не может быть очищена.")
+            return
+        }
+
+        let cartRef = db.collection("users").document(userId).collection("carts")
+        
+        // Удаление всех товаров из Firestore
+        cartRef.getDocuments { snapshot, error in
+            if let error = error {
+                print("Ошибка при очистке корзины: \(error.localizedDescription)")
+                return
+            }
+
+            snapshot?.documents.forEach { document in
+                cartRef.document(document.documentID).delete { error in
+                    if let error = error {
+                        print("Ошибка при удалении товара: \(error.localizedDescription)")
+                    } else {
+                        print("Товар успешно удален")
+                    }
+                }
+            }
+        }
+
+        // Очистка локальных данных
+        cartItems.removeAll()
+        print("Корзина успешно очищена")
+    }
 }

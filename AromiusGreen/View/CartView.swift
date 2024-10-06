@@ -10,10 +10,13 @@ import SwiftUI
 struct CartView: View {
     @EnvironmentObject var cartManager: CartManager
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var dataManager: DataManager
     @State private var isShowingAuthView = false
     @State private var selectedDeliveryMethod = "Self-pickup"
     let deliveryMethods = ["Self-pickup", "Paid delivery"]
     @State private var deliveryCost: Double = 0.0
+    @State private var isOrderSuccessful = false
+    @State private var isShowingOrderAlert = false
     
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 1)
     
@@ -78,8 +81,8 @@ struct CartView: View {
                                         .font(.headline)
                                 }
                                 
-                                NavigationLink {
-                                    UnderConstructionView()
+                                Button {
+                                    placeOrder()
                                 } label: {
                                     Text("Proceed to Checkout")
                                         .foregroundColor(.white)
@@ -129,12 +132,33 @@ struct CartView: View {
                 AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)
             }
+            .alert(isPresented: $isShowingOrderAlert) {
+                Alert(
+                    title: Text(isOrderSuccessful ? "Order Successful" : "Order Failed"),
+                    message: Text(isOrderSuccessful ? "Your order has been placed successfully." : "Failed to place the order."),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
+    
+    func placeOrder() {
+        dataManager.createOrder(cartItems: cartManager.cartItems, totalAmount: cartManager.totalPrice(), deliveryMethod: selectedDeliveryMethod) { success in
+            if success {
+                isOrderSuccessful = true
+                cartManager.clearCart()
+                isShowingOrderAlert = true
+            } else {
+                isShowingOrderAlert = false
+            }
+        }
+    }
+
 }
 
 #Preview {
     CartView()
         .environmentObject(CartManager())
         .environmentObject(AuthManager())
+        .environmentObject(DataManager())
 }

@@ -26,6 +26,7 @@ class DataManager: ObservableObject {
         fetchManufacturies()
         fetchProductLines()
         addProductsListener()
+        
     }
     
     deinit {
@@ -123,7 +124,7 @@ class DataManager: ObservableObject {
         let db = Firestore.firestore()
         let collectionRef = db.collection("items")
         
-        print("Fetching product with ID: \(productId.uuidString)")
+//        print("Fetching product with ID: \(productId.uuidString)")
         
         let query = collectionRef.whereField("id", isEqualTo: productId.uuidString)
         
@@ -186,38 +187,38 @@ class DataManager: ObservableObject {
     }
     
     func addToFavorites(product: Product) {
-         let db = Firestore.firestore()
-         let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-         
-         let favoriteProduct = FavoriteProduct(
-             id: product.id,
-             name: product.name,
-             manufactureName: product.manufactureName,
-             productLineName: product.productLineName,
-             thumbnailImage: product.thumbnailImage
-         )
-
-         let favoriteData: [String: Any] = [
-             "productId": favoriteProduct.id.uuidString,
-             "name": favoriteProduct.name,
-             "manufactureName": favoriteProduct.manufactureName,
-             "productLineName": favoriteProduct.productLineName,
-             "thumbnailImage": favoriteProduct.thumbnailImage
-         ]
-
-         favoritesRef.document(favoriteProduct.id.uuidString).setData(favoriteData, merge: true) { error in
-             if let error = error {
-                 print("Error adding to favorites: \(error.localizedDescription)")
-             } else {
-                 print("Product added to favorites successfully")
-             }
-         }
-     }
+        let db = Firestore.firestore()
+        let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
+        
+        let favoriteProduct = FavoriteProduct(
+            id: product.id,
+            name: product.name,
+            manufactureName: product.manufactureName,
+            productLineName: product.productLineName,
+            thumbnailImage: product.thumbnailImage
+        )
+        
+        let favoriteData: [String: Any] = [
+            "productId": favoriteProduct.id.uuidString,
+            "name": favoriteProduct.name,
+            "manufactureName": favoriteProduct.manufactureName,
+            "productLineName": favoriteProduct.productLineName,
+            "thumbnailImage": favoriteProduct.thumbnailImage
+        ]
+        
+        favoritesRef.document(favoriteProduct.id.uuidString).setData(favoriteData, merge: true) { error in
+            if let error = error {
+                print("Error adding to favorites: \(error.localizedDescription)")
+            } else {
+                print("Product added to favorites successfully")
+            }
+        }
+    }
     
     func removeFromFavorites(productId: UUID) {  // UUID вместо String
         let db = Firestore.firestore()
         let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-
+        
         favoritesRef.document(productId.uuidString).delete { error in  // Преобразуем UUID в строку
             if let error = error {
                 print("Error removing from favorites: \(error.localizedDescription)")
@@ -243,14 +244,14 @@ class DataManager: ObservableObject {
     func fetchFavorites(completion: @escaping ([FavoriteProduct]) -> Void) {
         let db = Firestore.firestore()
         let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-
+        
         favoritesRef.getDocuments { (snapshot: QuerySnapshot?, error: Error?) in // Уточняем типы
             if let error = error {
                 print("Error fetching favorites: \(error.localizedDescription)")
                 completion([])
                 return
             }
-
+            
             if let snapshot = snapshot {
                 let favoriteProducts = snapshot.documents.compactMap { document -> FavoriteProduct? in
                     let data = document.data()
@@ -291,6 +292,121 @@ class DataManager: ObservableObject {
                 print("Error adding document: \(err)")
             } else {
                 print("Document added with ID: \(ref!.documentID)")
+            }
+        }
+    }
+    
+    func createOrder(cartItems: [CartItem], totalAmount: Double, deliveryMethod: String, completion: @escaping (Bool) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Пользователь не авторизован")
+            completion(false)
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let orderRef = db.collection("orders").document() // Создаем новый заказ с уникальным ID
+        
+        let order = Order(
+            userId: userId,
+            items: cartItems,
+            totalAmount: totalAmount,
+            deliveryMethod: deliveryMethod
+        )
+        
+        do {
+            try orderRef.setData(from: order) { error in
+                if let error = error {
+                    print("Ошибка при создании заказа: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    print("Заказ успешно создан")
+                    completion(true)
+                }
+            }
+        } catch {
+            print("Ошибка при сохранении заказа: \(error.localizedDescription)")
+            completion(false)
+        }
+    }
+    
+    func updateOrderStatus(orderId: String, newStatus: String, completion: @escaping (Bool) -> Void) {
+        let db = Firestore.firestore()
+        let orderRef = db.collection("orders").document(orderId)
+        
+        orderRef.updateData(["status": newStatus]) { error in
+            if let error = error {
+                print("Ошибка при обновлении статуса заказа: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("Статус заказа обновлен на \(newStatus)")
+                completion(true)
+            }
+        }
+    }
+    
+    func fetchOrders(for userId: String, completion: @escaping ([Order]) -> Void) {
+        let db = Firestore.firestore()
+        let ordersRef = db.collection("orders").whereField("userId", isEqualTo: userId)
+        
+        ordersRef.getDocuments { (snapshot: QuerySnapshot?, error: Error?) in
+            if let error = error {
+                print("Ошибка при получении заказов: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+
+            if let snapshot = snapshot {
+//                print("Документы найдены: \(snapshot.documents.count)") // Отладочная информация
+
+                let fetchedOrders = snapshot.documents.compactMap { document -> Order? in
+                    let data = document.data()
+                    
+                    // Отладка данных
+//                    print("Полученные данные: \(data)")
+                    
+                    guard let userId = data["userId"] as? String,
+                          let itemsData = data["items"] as? [[String: Any]],
+                          let totalAmount = data["totalAmount"] as? Double,
+                          let status = data["status"] as? String,
+                          let createdAt = data["createdAt"] as? Timestamp,
+                          let deliveryMethod = data["deliveryMethod"] as? String else {
+                        print("Ошибка при преобразовании данных заказа")
+                        return nil
+                    }
+                    
+                    // Преобразуем данные items в [CartItem]
+                    let items = itemsData.compactMap { itemData -> CartItem? in
+                        guard let idString = itemData["id"] as? String,
+                              let id = UUID(uuidString: idString),
+                              let productIdString = itemData["productId"] as? String,
+                              let productId = UUID(uuidString: productIdString),
+                              let name = itemData["name"] as? String,
+                              let price = itemData["price"] as? Double,
+                              let quantity = itemData["quantity"] as? Int,
+                              let thumbnailImage = itemData["thumbnailImage"] as? String else {
+                            print("Ошибка при преобразовании элемента корзины")
+                            return nil
+                        }
+                        
+                        return CartItem(id: id, productId: productId, name: name, price: price, quantity: quantity, thumbnailImage: thumbnailImage)
+                    }
+                    
+                    // Создаем заказ
+                    var order = Order(
+                        userId: userId,
+                        items: items,
+                        totalAmount: totalAmount,
+                        deliveryMethod: deliveryMethod
+                    )
+                    
+                    // Присваиваем ID документа
+                    order.id = document.documentID
+                    order.status = status
+                    order.createdAt = createdAt.dateValue()
+                    
+                    return order
+                }
+                completion(fetchedOrders)
             }
         }
     }

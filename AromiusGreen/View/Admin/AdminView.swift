@@ -15,25 +15,33 @@ struct AdminView: View {
             VStack(spacing: 20) {
                 NavigationLink(destination: AllProductsView()) {
                     Text("All products")
-                        .foregroundStyle(Color.white)
+                        .foregroundColor(Color.darkBlueItem)
                         .padding()
+                        .background(Color.clear)
+                        .cornerRadius(6)
                         .frame(maxWidth: .infinity)
-                        .background(.blue)
-                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.darkBlueItem, lineWidth: 1)
+                        )
                 }
                 
                 NavigationLink(destination: AddProductView()) {
                     Text("Add new product")
-                        .foregroundStyle(Color.white)
+                        .foregroundColor(Color.darkBlueItem)
                         .padding()
+                        .background(Color.clear)
+                        .cornerRadius(6)
                         .frame(maxWidth: .infinity)
-                        .background(.blue)
-                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.darkBlueItem, lineWidth: 1)
+                        )
                 }
                 
                 Spacer()
             }
-            .padding()
+            .padding(40)
             .navigationTitle("Admin Dashboard")
             
         } else {

@@ -10,12 +10,15 @@ import SwiftUI
 struct InfoView: View {
     var body: some View {
         VStack {
-            Text("**Bat Yam**")
-            .font(.system(size: 20))
-            .foregroundColor(Color.darkBlueItem)
-            +
-            Text(" city")
-                .foregroundColor(Color.primary)
+            HStack {
+                Text("Bat Yam")
+                    .foregroundColor(.darkBlueItem)
+                    .font(.system(size: 20, weight: .bold))
+                + Text(" city")
+                    .font(.system(size: 18))
+                Spacer()
+            }
+            .padding(16)
             
             HStack(alignment: .top) {
                 Image(systemName: "mappin.and.ellipse")
@@ -62,7 +65,6 @@ struct InfoView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.top)
     }
 }
 

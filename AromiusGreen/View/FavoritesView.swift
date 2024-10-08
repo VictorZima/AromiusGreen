@@ -17,13 +17,24 @@ struct FavoritesView: View {
     
     var body: some View {
         NavigationView {
-            if authManager.isUserAuthenticated {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Favorites")
+                        .foregroundColor(.darkBlueItem)
+                        .font(.system(size: 20, weight: .bold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                }
+                .padding(16)
                 
-                Group {
+                if authManager.isUserAuthenticated {
                     if favoriteProducts.isEmpty {
-                        Text("У вас пока нет избранных товаров.")
-                            .font(.title2)
-                            .padding()
+                        VStack {
+                            Text("You have no favorite products yet.")
+                                .font(.title2)
+                                .padding()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     } else {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 3) {
@@ -31,42 +42,38 @@ struct FavoritesView: View {
                                     ProductCell(product: product)
                                 }
                             }
-                            
                         }
                     }
-                    
-                }
-                .navigationTitle("Favorites")
-                
-            } else {
-                VStack(spacing: 20) {
-                    Text("Save your favorite products to favorites!")
-                        .font(.title)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    Text("Create an account or log in to save products to your favorites and easily find them later.")
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    Button {
-                        isShowingAuthView = true
-                    } label: {
-                        Text("Sign in or Register")
-                            .foregroundColor(.green)
+                } else {
+                    VStack(spacing: 20) {
+                        Text("Save your favorite products to favorites!")
+                            .font(.title)
+                            .multilineTextAlignment(.center)
                             .padding()
-                            .frame(maxWidth: .infinity)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 17)
-                                    .stroke(Color.green, lineWidth: 2)
-                            )
+                        
+                        Text("Create an account or log in to save products to your favorites and easily find them later.")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        
+                        Button {
+                            isShowingAuthView = true
+                        } label: {
+                            Text("Sign in or Register")
+                                .foregroundColor(.green)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 17)
+                                        .stroke(Color.green, lineWidth: 2)
+                                )
+                        }
+                        .padding(.horizontal, 40)
                     }
-                    .padding(.horizontal, 40)
+                    .padding()
                 }
-                .padding()
             }
-            
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .onAppear {
             if authManager.isUserAuthenticated {
@@ -146,4 +153,5 @@ struct ProductCell: View {
 #Preview {
     FavoritesView()
         .environmentObject(AuthManager())
+        .environmentObject(DataManager())
 }

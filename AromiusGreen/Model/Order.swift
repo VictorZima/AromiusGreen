@@ -16,7 +16,9 @@ struct Order: Identifiable, Codable {
     var status: String
     var createdAt: Date
     var deliveryMethod: String
-
+    var updatedAt: Date?
+    var statusHistory: [OrderStatusHistory] = []
+    
     init(userId: String, items: [CartItem], totalAmount: Double, deliveryMethod: String) {
         self.userId = userId
         self.items = items
@@ -24,5 +26,15 @@ struct Order: Identifiable, Codable {
         self.status = "Pending"
         self.createdAt = Date()
         self.deliveryMethod = deliveryMethod
+    }
+}
+
+struct OrderStatusHistory: Codable {
+    var status: String
+    var date: Date
+    
+    init(status: String) {
+        self.status = status
+        self.date = Date()
     }
 }

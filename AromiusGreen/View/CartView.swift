@@ -22,12 +22,24 @@ struct CartView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Cart")
+                        .foregroundColor(.darkBlueItem)
+                        .font(.system(size: 20, weight: .bold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                }
+                .padding(16)
+                
                 if authManager.isUserAuthenticated {
                     if cartManager.cartItems.isEmpty {
-                        Text("Your cart is empty")
-                            .font(.title2)
-                            .padding()
+                        VStack {
+                            Text("Your cart is empty")
+                                .font(.title2)
+                                .padding()                            
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     } else {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 7) {
@@ -95,11 +107,7 @@ struct CartView: View {
                                 .padding(.bottom, 6)
                             }
                             .padding()
-                            
-                            .navigationTitle("Cart")
                         }
-                        
-                        
                     }
                 } else {
                     VStack(spacing: 20) {
@@ -125,9 +133,10 @@ struct CartView: View {
                         .padding(.horizontal, 40)
                     }
                     .padding()
+                    
                 }
             }
-            .navigationTitle("Your Cart")
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .sheet(isPresented: $isShowingAuthView) {
                 AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)

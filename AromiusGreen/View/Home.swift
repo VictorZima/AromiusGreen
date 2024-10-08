@@ -8,9 +8,6 @@
 import SwiftUI
 
 struct Home: View {
-//    @EnvironmentObject var authManager: AuthManager
-//    @State private var isShowingSettings = false
-//    @State private var isShowingAuth = false
     @EnvironmentObject var dataManager: DataManager
     @State private var selectedCategory = "0"
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
@@ -26,7 +23,18 @@ struct Home: View {
     var body: some View {
         NavigationView {
             VStack {
-                HeaderRow()
+                HStack {
+                    Text("Dead Sea Cosmetics\nfrom")
+                        .font(.system(size: 18))
+                    + Text(" AROMIUS")
+                        .foregroundColor(.darkBlueItem)
+                        .font(.system(size: 20, weight: .bold))
+                    + Text(" shop")
+                        .font(.system(size: 18))
+                    Spacer()
+                }
+                .padding(16)
+                
                 ScrollView {
                     VStack {
                         CategoryListView
@@ -78,29 +86,6 @@ struct Home: View {
             .padding(.leading, 15)
         }
     }
-    
-//    var personButton: some View {
-//        Button(action: {
-//            if authManager.isUserAuthenticated {
-//                isShowingSettings = true
-//            } else {
-//                isShowingAuth = true
-//            }
-//        }) {
-//            Image(systemName: "person.and.background.dotted")
-//                .foregroundColor(.green)
-//                .imageScale(.large)
-//                .frame(width: 60, height: 50)
-//                .overlay(RoundedRectangle(cornerRadius: 17).stroke().opacity(0.2).foregroundColor(.green))
-//        }
-//        .sheet(isPresented: $isShowingSettings) {
-//            ProfileView()
-//        }
-//        .sheet(isPresented: $isShowingAuth) {
-//            AuthView()
-//                .environmentObject(authManager)
-//        }
-//    }
 }
 
 struct ProductCard: View {
@@ -111,7 +96,6 @@ struct ProductCard: View {
     var body: some View {
         NavigationLink {
             ProductView(productId: product.id)
-//            ProductView(item: product)
         } label: {
             VStack(alignment: .leading) {
                 let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!

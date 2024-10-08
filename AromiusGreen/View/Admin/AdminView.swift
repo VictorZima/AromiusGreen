@@ -13,6 +13,19 @@ struct AdminView: View {
     var body: some View {
         if authManager.currentUser?.isAdmin == true {
             VStack(spacing: 20) {
+                NavigationLink(destination: AdminOrdersView()) {
+                    Text("Orders")
+                        .foregroundColor(Color.darkBlueItem)
+                        .padding()
+                        .background(Color.clear)
+                        .cornerRadius(6)
+                        .frame(maxWidth: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.darkBlueItem, lineWidth: 1)
+                        )
+                }
+                
                 NavigationLink(destination: AllProductsView()) {
                     Text("All products")
                         .foregroundColor(Color.darkBlueItem)

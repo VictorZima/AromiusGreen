@@ -16,7 +16,16 @@ struct ProfileView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(alignment: .center) {
+                HStack {
+                    Text("Profile")
+                        .foregroundColor(.darkBlueItem)
+                        .font(.system(size: 20, weight: .bold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                }
+                .padding(16)
+                
                 if let user = authManager.currentUser {
                     if let photoURL = user.photo, let url = URL(string: photoURL) {
                         AsyncImage(url: url) { image in
@@ -79,10 +88,10 @@ struct ProfileView: View {
                                 }
                                 .frame(width: 70, height: 70)
                             }
+                            Divider()
+                                .frame(width: 1, height: 60)
+                                .background(Color.lightBlue)
                         }
-                        Divider()
-                            .frame(width: 1, height: 60)
-                            .background(Color.lightBlue)
                         
                         NavigationLink {
                             OrdersView()
@@ -100,21 +109,6 @@ struct ProfileView: View {
                         Divider()
                             .frame(width: 1, height: 60)
                             .background(Color.lightBlue)
-                        
-//                        NavigationLink {
-//                        
-//                        } label: {
-//                            VStack {
-//                                Image(systemName: "gearshape.2")
-//                                    .foregroundStyle(Color.darkBlueItem)
-//                                    .font(.title2)
-//                                Text("Settings")
-//                                    .font(.subheadline)
-//                                    .foregroundStyle(Color.darkBlueItem)
-//                            }
-//                            .frame(width: 70, height: 70)
-//                        }
-                        
                     }
                     .padding(.horizontal, 20)
                     Spacer()
@@ -134,7 +128,6 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 30)
-                    .navigationTitle("Settings")
                 } else {
                     VStack(spacing: 20) {
                         
@@ -159,8 +152,8 @@ struct ProfileView: View {
                     }
                     .padding()
                 }
-                
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .fullScreenCover(isPresented: $isEditingProfile) {
                 EditProfileView(isPresented: $isEditingProfile)
             }

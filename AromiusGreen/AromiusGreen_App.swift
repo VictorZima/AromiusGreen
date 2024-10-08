@@ -15,10 +15,6 @@ struct AromiusGreen_App: App {
     @StateObject var dataManager = DataManager()
     @StateObject var authManager = AuthManager()
     @StateObject var cartManager = CartManager()
-
-//    init() {
-//        FirebaseApp.configure()
-//    }
     
     var body: some Scene {
         WindowGroup {

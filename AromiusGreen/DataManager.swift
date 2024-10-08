@@ -124,7 +124,7 @@ class DataManager: ObservableObject {
         let db = Firestore.firestore()
         let collectionRef = db.collection("items")
         
-//        print("Fetching product with ID: \(productId.uuidString)")
+        //        print("Fetching product with ID: \(productId.uuidString)")
         
         let query = collectionRef.whereField("id", isEqualTo: productId.uuidString)
         
@@ -354,15 +354,15 @@ class DataManager: ObservableObject {
                 completion([])
                 return
             }
-
+            
             if let snapshot = snapshot {
-//                print("Документы найдены: \(snapshot.documents.count)") // Отладочная информация
-
+                //                print("Документы найдены: \(snapshot.documents.count)") // Отладочная информация
+                
                 let fetchedOrders = snapshot.documents.compactMap { document -> Order? in
                     let data = document.data()
                     
                     // Отладка данных
-//                    print("Полученные данные: \(data)")
+                    //                    print("Полученные данные: \(data)")
                     
                     guard let userId = data["userId"] as? String,
                           let itemsData = data["items"] as? [[String: Any]],
@@ -410,4 +410,46 @@ class DataManager: ObservableObject {
             }
         }
     }
+    
+    func fetchAllOrders(completion: @escaping ([Order]) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("orders").getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching all orders: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+            
+            if let snapshot = snapshot {
+                let orders = snapshot.documents.compactMap { document -> Order? in
+                    try? document.data(as: Order.self)
+                }
+                completion(orders)
+            } else {
+                completion([])
+            }
+        }
+    }
+
+    func updateOrderStatus(order: Order, newStatus: String) {
+            let db = Firestore.firestore()
+            let orderRef = db.collection("orders").document(order.id ?? "")
+            
+            let newHistoryRecord = OrderStatusHistory(status: newStatus)
+            var updatedHistory = order.statusHistory
+            updatedHistory.append(newHistoryRecord)
+            
+            // Обновление статуса и записи обновления
+            orderRef.updateData([
+                "status": newStatus,
+                "updatedAt": Date(),
+                "statusHistory": updatedHistory.map { try! Firestore.Encoder().encode($0) }
+            ]) { error in
+                if let error = error {
+                    print("Error updating order status: \(error.localizedDescription)")
+                } else {
+                    print("Order status updated successfully")
+                }
+            }
+        }
 }

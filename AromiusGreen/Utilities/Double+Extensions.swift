@@ -9,11 +9,10 @@ import Foundation
 
 extension Double {
     func formattedPrice() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencySymbol = ""
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: NSNumber(value: self))?.trimmingCharacters(in: .whitespaces) ?? String(format: "%.2f", self)
+        if self.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(Int(self))"
+        } else {
+            return String(format: "%.2f", self)
+        }
     }
 }

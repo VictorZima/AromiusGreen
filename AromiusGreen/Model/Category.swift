@@ -5,11 +5,17 @@
 //  Created by VictorZima on 30/05/2024.
 //
 
-import Foundation
+import FirebaseFirestoreSwift
 
-struct Category: Identifiable {
-    var id: String
+struct Category: Identifiable, Codable {
+    @DocumentID var id: String?
     var title: String
     var icon: String
     var sortIndex: Int
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case icon
+        case sortIndex
+    }
 }

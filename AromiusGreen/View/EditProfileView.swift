@@ -17,25 +17,30 @@ struct EditProfileView: View {
     @State private var photo: String = ""
 
     var body: some View {
-        NavigationView {
-            Form {
-                TextField("Имя", text: $firstName)
-                TextField("Фамилия", text: $secondName)
-                TextField("Страна", text: $country)
-                TextField("Город", text: $city)
-                // Здесь также может быть UI для загрузки/выбора фото
+        HStack {
+            Button("Cancel") {
+                isPresented = false
             }
-            .navigationBarTitle("Редактировать профиль", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button("Отмена") {
-                    isPresented = false
-                },
-                trailing: Button("Сохранить") {
-                    saveProfileChanges()
-                    isPresented = false
-                }
-            )
+            Spacer()
+            Button("Save") {
+                saveProfileChanges()
+                isPresented = false
+            }
         }
+        .padding()
+        
+        Form {
+            customTextField("Имя", text: $firstName)
+            customTextField("Фамилия", text: $secondName)
+            customTextField("Страна", text: $country)
+            customTextField("Город", text: $city)
+            // Здесь также может быть UI для загрузки/выбора фото
+        }
+        .formStyle(.columns)
+        .navigationBarTitle("Редактировать профиль", displayMode: .inline)
+        Spacer()
+
+        
         .onAppear {
             if let user = authManager.currentUser {
                 firstName = user.firstName
@@ -45,6 +50,19 @@ struct EditProfileView: View {
                 photo = user.photo ?? ""
             }
         }
+    }
+    
+    @ViewBuilder
+    func customTextField(_ placeholder: String, text: Binding<String>) -> some View {
+        TextField(placeholder, text: text)
+            .padding()
+            .background(Color.clear)
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.gray, lineWidth: 1)
+            )
+            .padding(.horizontal)
     }
     
     func saveProfileChanges() {

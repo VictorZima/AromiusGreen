@@ -6,17 +6,18 @@
 //
 
 import SwiftUI
+import FirebaseStorage
 
 struct CartItemCellView: View {
     @EnvironmentObject var cartManager: CartManager
     var item: CartItem
-    let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
+    let storageRef = Storage.storage().reference(withPath: "items_images/thumbnails/")
     @State private var loadedImage: Image?
     
     var body: some View {
         HStack(alignment: .top) {
-            let imagePath = "items_images%2Fthumbnails%2F" + item.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-            let imageUrl = baseUrl + imagePath + "?alt=media"
+            let imagePath = item.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
+            let imageRef = storageRef.child(imagePath)
             
             if let loadedImage = loadedImage {
                 loadedImage
@@ -33,14 +34,22 @@ struct CartItemCellView: View {
                     .foregroundColor(.gray)
                     .opacity(0.8)
                     .onAppear {
-                        Task {
-                            loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
+                        imageRef.downloadURL { url, error in
+                            if let error = error {
+                                print("Ошибка загрузки изображения: \(error.localizedDescription)")
+                                return
+                            }
+                            if let url = url {
+                                Task {
+                                    loadedImage = await ImageLoader.loadImage(from: url)
+                                }
+                            }
                         }
                     }
             }
             
             VStack(alignment: .leading) {
-                Text(item.name)
+                Text(item.title)
                     .font(.headline)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .topLeading)

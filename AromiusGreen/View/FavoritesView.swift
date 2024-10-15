@@ -39,7 +39,11 @@ struct FavoritesView: View {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 3) {
                                 ForEach(favoriteProducts, id: \.id) { product in
-                                    ProductCell(product: product)
+//                                    ProductCell(product: product)
+                                    ProductCell(product: product, onRemove: { removedProduct in
+                                        // Удаление товара из списка при удалении из избранного
+                                        favoriteProducts.removeAll { $0.id == removedProduct.id }
+                                    })
                                 }
                             }
                         }
@@ -93,60 +97,63 @@ struct ProductCell: View {
     @State private var loadedImage: Image?
     var product: FavoriteProduct
     let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
+    let onRemove: (FavoriteProduct) -> Void
     
     var body: some View {
-        NavigationLink {
-            ProductView(productId: product.id)
-        } label: {
-            VStack(alignment: .leading) {
-                let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-                let imageUrl = baseUrl + imagePath + "?alt=media"
-                
-                if let loadedImage = loadedImage {
-                    loadedImage
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .background(.gray.opacity(0.075))
-                } else {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .background(.gray.opacity(0.075))
-                        .foregroundColor(.gray)
-                        .opacity(0.8)
-                        .frame(maxWidth: .infinity)
-                        .onAppear {
-                            
-                            Task {
-                                loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
-                            }
-                        }
-                }
-                
+            NavigationLink {
+//                                ProductView(productId: product.productId)
+                ProductView(productId: product.productId, onRemoveFromFavorites: {
+                              onRemove(product) // Удаляем товар из списка
+                          })
+            } label: {
                 VStack(alignment: .leading) {
+                    let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
+                    let imageUrl = baseUrl + imagePath + "?alt=media"
                     
-                    Text("\(product.name)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color.black)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                        .frame(minHeight: 40, alignment: .topLeading)
+                    if let loadedImage = loadedImage {
+                        loadedImage
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .background(.gray.opacity(0.075))
+                    } else {
+                        Image(systemName: "photo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .background(.gray.opacity(0.075))
+                            .foregroundColor(.gray)
+                            .opacity(0.8)
+                            .frame(maxWidth: .infinity)
+                            .onAppear {
+                                Task {
+                                    loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
+                                }
+                            }
+                    }
                     
-                    Text("\(product.manufactureName)")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.gray)
-                    
-                    Text("\(product.productLineName)")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.gray)
-                    
+                    VStack(alignment: .leading) {
+                        
+                        Text("\(product.title)")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Color.black)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .frame(minHeight: 40, alignment: .topLeading)
+                        
+                        Text("\(product.manufactureName)")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.gray)
+                        
+                        Text("\(product.productLineName)")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.gray)
+                        
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 15)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 15)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
-        }
-        
+
     }
 }
 

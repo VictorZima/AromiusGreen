@@ -12,26 +12,31 @@ struct ProductView: View {
     @EnvironmentObject var cartManager: CartManager
     @Environment(\.presentationMode) var presentationMode
     @State private var product: Product?
+    
     @State private var loadedImage: Image?
     @State private var isFavorite = false
     @State private var isShowingAuthView = false
-    var productId: UUID
+    
+    var passedProduct: Product?
+    var productId: String?
+    var onRemoveFromFavorites: (() -> Void)?
     let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
     
     var body: some View {
         Group {
-            if let item = product {
+            if let product = product {
+                
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading) {
                         ZStack {
-                            if item.image.isEmpty {
+                            if product.image.isEmpty {
                                 Image(systemName: "photo")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .foregroundColor(.gray.opacity(0.075))
                                     .frame(maxWidth: .infinity)
                             } else {
-                                let imagePath = "items_images%2F" + item.image.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
+                                let imagePath = "items_images%2F" + (product.image.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")
                                 let imageUrl = baseUrl + imagePath + "?alt=media"
                                 if let loadedImage = loadedImage {
                                     loadedImage
@@ -46,8 +51,10 @@ struct ProductView: View {
                                         .foregroundColor(.gray.opacity(0.075))
                                         .frame(maxWidth: .infinity)
                                         .onAppear {
-                                            Task {
-                                                loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
+                                            if let url = URL(string: imageUrl) {
+                                                Task {
+                                                    loadedImage = await ImageLoader.loadImage(from: url)
+                                                }
                                             }
                                         }
                                 }
@@ -73,91 +80,59 @@ struct ProductView: View {
                         .frame(maxWidth: .infinity)
                         
                         VStack(alignment: .leading) {
-                            Text("\(item.name)")
+                            Text("\(product.title)")
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundColor(Color.black)
-                            Text("\(item.manufactureName)")
+                            Text("\(product.manufactureName)")
                                 .font(.system(size: 15))
                                 .foregroundColor(Color.gray)
-                            Text("\(item.productLineName)")
+                            Text("\(product.productLineName)")
                                 .font(.system(size: 13))
                                 .foregroundColor(Color.gray)
                         }
                         
-                        HStack(alignment: .center) {
-                            if item.price.truncatingRemainder(dividingBy: 1) == 0 {
-                                Text("₪ \(Int(item.price))")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color.black)
-                            } else {
-                                let priceComponents = String(format: "%.2f", item.price).split(separator: ".")
-
-                                HStack(alignment: .top, spacing: 0) {
-                                    Text("₪ \(priceComponents[0])")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(Color.black)
-                                    
-                                    Text("\(priceComponents[1])")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(Color.gray)
-                                        .baselineOffset(15)
-                                        .overlay(
-                                            Rectangle()
-                                                .frame(height: 1)
-                                                .offset(y: -15),
-                                            alignment: .bottom
-                                        )
-                                        .foregroundStyle(Color.gray)
-                                        .offset(y: -7)
-                                }
-                            }
+                        HStack(alignment: .firstTextBaseline, spacing: 0) {
+                            Text("₪")
+                                .font(.system(size: 12))
+                            Text(product.price.formattedPrice())
+                                .font(.system(size: 15))
+                                .foregroundColor(Color.black)
                             
                             Spacer()
                             
-                            Text("\(item.value)")
+                            Text("\(product.value ?? "")")
                                 .font(.system(size: 15))
                                 .foregroundColor(Color.black)
                         }
                         .padding(.vertical)
                         
                         VStack(alignment: .leading) {
-                            Text(item.descr)
+                            Text(product.descr)
                                 .font(.system(size: 15))
                                 .foregroundColor(Color.black)
                         }
                         
-                        Button {
+                        CustomButton(title: "Add to cart", widthSize: .large) {
                             if dataManager.currentUserId.isEmpty {
                                 isShowingAuthView = true
                             } else {
-                                cartManager.addToCart(product: item)
+                                cartManager.addToCart(product: product)
                             }
-                        } label: {
-                            HStack {
-                                Image(systemName: "cart")
-                                    .font(.title)
-                                    .foregroundStyle(Color.white)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(.black)
-                            .cornerRadius(7)
-                            .padding()
                         }
-                        
+                        .padding(.bottom)
                     }
                 }
                 .padding()
-                .navigationTitle(item.name)
+                .navigationTitle(product.title)
             } else {
-                ProgressView("Loading product details...")
+                Text("Loading product data...")
                     .onAppear {
-                        loadProductData()
+                        loadProductIfNeeded()
                     }
             }
         }
         .onAppear {
-            if dataManager.currentUserId.isEmpty == false {
+            if !dataManager.currentUserId.isEmpty {
                 checkIfFavorite()
             }
         }
@@ -166,35 +141,53 @@ struct ProductView: View {
         }
     }
     
-    func loadProductData() {
-        dataManager.fetchProductById(productId: productId) { fetchedProduct in
-            if let fetchedProduct = fetchedProduct {
-                print("Product fetched: \(fetchedProduct.name)")
-                self.product = fetchedProduct
-            } else {
-                print("Product id: \(productId) not found or error occurred")
+    func loadProductIfNeeded() {
+        if let passedProduct = passedProduct {
+            self.product = passedProduct
+        } else if let productId = productId {
+            dataManager.fetchProductById(productId: productId) { fetchedProduct in
+                if let fetchedProduct = fetchedProduct {
+                    self.product = fetchedProduct
+                    checkIfFavorite()
+                } else {
+                    print("Продукт не найден")
+                }
             }
         }
     }
     
     func checkIfFavorite() {
-        dataManager.isFavorite(productId: productId.uuidString) { isFav in
+        guard let product = product, let productId = product.id else {
+            print("Error: product is not loaded or has no ID")
+            return
+        }
+        dataManager.isFavorite(productId: productId) { isFav in
             isFavorite = isFav
         }
     }
-    
+
     func toggleFavorite() {
+        // Проверка на авторизацию пользователя
         if dataManager.currentUserId.isEmpty {
             isShowingAuthView = true
             return
         }
-        
-        guard let item = product else { return }
-        if isFavorite {
-            dataManager.removeFromFavorites(productId: item.id)
-        } else {
-            dataManager.addToFavorites(product: item)
+
+        // Проверка, что продукт загружен и у него есть ID
+        guard let product = product, let productId = product.id else {
+            print("Ошибка: продукт не загружен или у него нет идентификатора")
+            return
         }
+
+        // Логика добавления/удаления из избранного
+        if isFavorite {
+            dataManager.removeFromFavorites(productId: productId)
+            onRemoveFromFavorites?()
+        } else {
+            dataManager.addToFavorites(product: product)
+        }
+        
+        // Обновляем статус
         isFavorite.toggle()
     }
 }

@@ -9,14 +9,16 @@ import SwiftUI
 
 struct Home: View {
     @EnvironmentObject var dataManager: DataManager
-    @State private var selectedCategory = "0"
+    @State private var selectedCategory: String? = nil
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
     
     var filteredProducts: [Product] {
-        if selectedCategory == "0" {
+        if selectedCategory == "All" || selectedCategory == nil {
             return dataManager.products
-        } else {
+        } else if let selectedCategory = selectedCategory {
             return dataManager.products.filter { $0.categoryIds.contains(selectedCategory) }
+        } else {
+            return []
         }
     }
     
@@ -66,7 +68,7 @@ struct Home: View {
                                     .scaledToFit()
                                     .frame(width: 40, height: 40)
                             }
-                            if selectedCategory == category.id || category.id == "0" {
+                            if selectedCategory == category.id || category.id == "All" {
                                 Text(category.title)
                             }
                         }
@@ -84,6 +86,11 @@ struct Home: View {
                 }
             }
             .padding(.leading, 15)
+            .onAppear {
+                if selectedCategory == nil {
+                    selectedCategory = "All"
+                }
+            }
         }
     }
 }
@@ -95,35 +102,39 @@ struct ProductCard: View {
     
     var body: some View {
         NavigationLink {
-            ProductView(productId: product.id)
+            ProductView(passedProduct: product)
         } label: {
             VStack(alignment: .leading) {
-                let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-                let imageUrl = baseUrl + imagePath + "?alt=media"
                 
-                if let loadedImage = loadedImage {
-                    loadedImage
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .background(.gray.opacity(0.075))
-                } else {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .background(.gray.opacity(0.075))
-                        .foregroundColor(.gray)
-                        .opacity(0.8)
-                        .frame(maxWidth: .infinity)
-                        .onAppear {
-                            Task {
-                                loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
+                let thumbnailImage = product.thumbnailImage
+                
+                if let encodedThumbnail = thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+                   let url = URL(string: baseUrl + "items_images%2Fthumbnails%2F" + encodedThumbnail + "?alt=media") {
+                    
+                    if let loadedImage = loadedImage {
+                        loadedImage
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .background(Color.gray.opacity(0.075))
+                    } else {
+                        Image(systemName: "photo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .background(Color.gray.opacity(0.075))
+                            .foregroundColor(.gray)
+                            .opacity(0.8)
+                            .frame(maxWidth: .infinity)
+                            .onAppear {
+                                Task {
+                                    loadedImage = await ImageLoader.loadImage(from: url)
+                                }
                             }
-                        }
+                    }
                 }
                 
                 VStack(alignment: .leading) {
                     
-                    Text("\(product.name)")
+                    Text("\(product.title)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Color.black)
                         .lineLimit(2)
@@ -133,42 +144,16 @@ struct ProductCard: View {
                     Text("\(product.manufactureName)")
                         .font(.system(size: 13))
                         .foregroundStyle(Color.gray)
-                    if product.productLineId != 0 {
-                        Text("\(product.productLineName)")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.gray)
-                    } else {
-                        Text(" ")
-                            .font(.system(size: 10))
-                    }
-
-                    HStack(alignment: .center) {
-                        if product.price.truncatingRemainder(dividingBy: 1) == 0 {
-                            Text("₪ \(Int(product.price))")
-                                .font(.system(size: 15))
-                                .foregroundColor(Color.black)
-                        } else {
-                            let priceComponents = String(format: "%.2f", product.price).split(separator: ".")
-
-                            HStack(alignment: .top, spacing: 0) {
-                                Text("₪ \(priceComponents[0])")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color.black)
-                                
-                                Text("\(priceComponents[1])")
-                                    .font(.system(size: 11))
-                                    .foregroundColor(Color.gray)
-                                    .baselineOffset(15)
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 1)
-                                            .offset(y: -15),
-                                        alignment: .bottom
-                                    )
-                                    .foregroundStyle(Color.gray)
-                                    .offset(y: -7)
-                            }
-                        }
+                    Text(product.productLineName)
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.gray)
+                    
+                    HStack(alignment: .firstTextBaseline, spacing: 0) {
+                        Text("₪")
+                            .font(.system(size: 12))
+                        Text(product.price.formattedPrice())
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.black)
                     }
                     .padding(.top, 10)
                 }
@@ -177,7 +162,6 @@ struct ProductCard: View {
             }
             .frame(maxWidth: .infinity)
         }
-       
     }
 }
 

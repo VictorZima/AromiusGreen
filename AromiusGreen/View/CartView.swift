@@ -152,7 +152,7 @@ struct CartView: View {
     }
     
     func placeOrder() {
-        dataManager.createOrder(cartItems: cartManager.cartItems, totalAmount: cartManager.totalPrice(), deliveryMethod: selectedDeliveryMethod) { success in
+        dataManager.createOrder(cartItems: cartManager.cartItems, totalAmount: cartManager.totalPrice(), deliveryMethod: selectedDeliveryMethod, deliveryCost: deliveryCost) { success in
             if success {
                 isOrderSuccessful = true
                 cartManager.clearCart()

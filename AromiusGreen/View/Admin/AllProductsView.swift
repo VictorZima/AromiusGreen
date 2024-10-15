@@ -17,7 +17,7 @@ struct AllProductsView: View {
             List {
                 ForEach(dataManager.products) { item in
                     VStack(alignment: .leading) {
-                        Text(item.name)
+                        Text(item.title)
                             .font(.headline)
                             .bold()
                         Text(item.manufactureName)
@@ -27,9 +27,9 @@ struct AllProductsView: View {
                             Text("\(item.price.formattedPrice()) ₽")
                                 .font(.subheadline)
                                 .foregroundColor(.green)
-                            Text("\(item.purchasePrice.formattedPrice()) ₽")
-                                .font(.subheadline)
-                                .foregroundColor(.red)
+//                            Text("\(item.purchasePrice.formattedPrice()) ₽")
+//                                .font(.subheadline)
+//                                .foregroundColor(.red)
                         }
                     }
                 }

@@ -16,8 +16,8 @@ struct AddProductView: View {
     @State private var checkboxStates: [String: Bool] = [:]
     @State private var title = ""
     @State private var barcode = ""
-    @State private var selectedManufactureId: Int = 0
-    @State private var selectedProductLineId: Int = 0
+    @State private var selectedManufactureId: String? = nil
+    @State private var selectedProductLineId: String? = nil
     @State private var image = ""
     @State private var price: Double = 0.0
     @State private var purchasePrice: Double = 0.0
@@ -98,12 +98,12 @@ struct AddProductView: View {
                 
                 Picker("Manufacture", selection: $selectedManufactureId) {
                     ForEach(dataManager.manufacturies, id: \.id) { manufacture in
-                        Text(manufacture.name).tag(manufacture.id as Int?)
+                        Text(manufacture.title).tag(manufacture.id)
                     }
                 }
                 Picker("ProductLine", selection: $selectedProductLineId) {
                     ForEach(dataManager.productLines, id: \.id) { productLine in
-                        Text(productLine.name).tag(productLine.id as Int?)
+                        Text(productLine.title).tag(productLine.id)
                     }
                 }
                 
@@ -115,12 +115,16 @@ struct AddProductView: View {
                 TextField("Value (ml)", text: $value)
                 List {
                     ForEach(dataManager.categories, id: \.id) { category in
-                        CheckboxField(id: category.id, label: category.title) { id, isChecked in
-                            if isChecked {
-                                selectedCategories.append(id)
-                            } else {
-                                selectedCategories.removeAll { $0 == id }
+                        if let categoryId = category.id {
+                            CheckboxField(id: categoryId, label: category.title) { id, isChecked in
+                                if isChecked {
+                                    selectedCategories.append(id)
+                                } else {
+                                    selectedCategories.removeAll { $0 == id }
+                                }
                             }
+                        } else {
+                            Text("Категория без идентификатора")
                         }
                     }
                 }
@@ -229,34 +233,42 @@ struct AddProductView: View {
             return
         }
         
-        guard let manufactureName = dataManager.manufacturies.first(where: { $0.id == selectedManufactureId }) else {
+        guard let selectedManufactureId = selectedManufactureId else {
+            print("Ошибка: Не выбран производитель")
+            return
+        }
+        
+        guard let selectedProductLineId = selectedProductLineId else {
+            print("Ошибка: Не выбрана линейка продуктов")
+            return
+        }
+        
+        guard let manufacture = dataManager.manufacturies.first(where: { $0.id == selectedManufactureId }) else {
             print("Ошибка: Производитель не найден")
             return
         }
         
-        guard let productLineName = dataManager.productLines.first(where: { $0.id == selectedProductLineId }) else {
+        guard let productLine = dataManager.productLines.first(where: { $0.id == selectedProductLineId }) else {
             print("Ошибка: Линейка продуктов не найдена")
             return
         }
         
         let newItem = Product(
-            id: UUID(),
-            name: title,
+            title: title,
             barcode: barcode,
             descr: description,
             value: value,
             categoryIds: selectedCategories,
             manufactureId: selectedManufactureId,
-            manufactureName: manufactureName.name,
+            manufactureName: manufacture.title,
             productLineId: selectedProductLineId,
-            productLineName: productLineName.name,
+            productLineName: productLine.title,
             image: imageUrl,
             thumbnailImage: thumbnailUrl,
             price: price,
             purchasePrice: purchasePrice
         )
         dataManager.addProduct(item: newItem)
-        //        presentationMode.wrappedValue.dismiss()
     }
 }
 

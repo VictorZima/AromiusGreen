@@ -54,12 +54,12 @@ class AuthManager: ObservableObject {
                 let isAdmin = data?["isAdmin"] as? Bool ?? false
                 
                 self.currentUser = AppUser(
-                    id: UUID(uuidString: firebaseUser.uid) ?? UUID(),
+                    id: firebaseUser.uid,
                     firstName: data?["firstName"] as? String ?? "",
                     secondName: data?["secondName"] as? String ?? "",
                     country: data?["country"] as? String ?? "",
                     city: data?["city"] as? String ?? "",
-                    email: firebaseUser.email ?? "", // email из FirebaseAuth.User
+                    email: firebaseUser.email ?? "",
                     photo: data?["photo"] as? String,
                     isAdmin: isAdmin
                 )

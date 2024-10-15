@@ -57,21 +57,9 @@ struct ProfileView: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
-                    Button {
+                    CustomButton(title: "Edit Profile", widthSize: .small) {
                         isEditingProfile = true
-                    } label: {
-                        Text("Edit Profile")
-                            .foregroundColor(Color.darkBlueItem)
-                            .padding()
-                            .background(Color.clear)
-                            .cornerRadius(6)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.darkBlueItem, lineWidth: 1)
-                            )
                     }
-                    .padding(.bottom, 20)
-                    .padding(.horizontal, 40)
                     
                     HStack(alignment: .center, spacing: 5) {
                         if authManager.currentUser?.isAdmin == true {
@@ -109,6 +97,20 @@ struct ProfileView: View {
                         Divider()
                             .frame(width: 1, height: 60)
                             .background(Color.lightBlue)
+                        
+                        NavigationLink {
+                            SettingsView()
+                        } label: {
+                            VStack {
+                                Image(systemName: "gearshape.2")
+                                    .foregroundStyle(Color.darkBlueItem)
+                                    .font(.title2)
+                                Text("Settings")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.darkBlueItem)
+                            }
+                            .frame(width: 70, height: 70)
+                        }
                     }
                     .padding(.horizontal, 20)
                     Spacer()

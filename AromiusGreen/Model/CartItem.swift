@@ -5,13 +5,21 @@
 //  Created by VictorZima on 20/09/2024.
 //
 
-import Foundation
+import FirebaseFirestoreSwift
 
 struct CartItem: Identifiable, Codable {
-    var id: UUID = UUID()
-    var productId: UUID
-    var name: String
+    @DocumentID var id: String?
+    var productId: String
+    var title: String
     var price: Double
     var quantity: Int
     var thumbnailImage: String
+
+    enum CodingKeys: String, CodingKey {
+        case productId
+        case title
+        case price
+        case quantity
+        case thumbnailImage
+    }
 }

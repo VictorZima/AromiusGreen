@@ -24,31 +24,43 @@ class CartManager: ObservableObject {
         
         let cartRef = db.collection("users").document(userId).collection("carts")
         
-        if let index = cartItems.firstIndex(where: { $0.productId == product.id }) {
+        guard let productId = product.id else {
+            print("Ошибка: у продукта нет идентификатора")
+            return
+        }
+        
+        if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
             cartItems[index].quantity += quantity
             
             let updatedItem = cartItems[index]
-            cartRef.document(updatedItem.id.uuidString).updateData([
-                "quantity": updatedItem.quantity
-            ]) { error in
-                if let error = error {
-                    print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
-                } else {
-                    print("Количество товара успешно обновлено")
+            
+            // Безопасно разворачиваем updatedItem.id
+            if let itemId = updatedItem.id {
+                cartRef.document(itemId).updateData([
+                    "quantity": updatedItem.quantity
+                ]) { error in
+                    if let error = error {
+                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                    } else {
+                        print("Количество товара успешно обновлено")
+                    }
                 }
+            } else {
+                print("Ошибка: отсутствует идентификатор элемента корзины.")
             }
         } else {
             let newItem = CartItem(
-                productId: product.id,
-                name: product.name,
+                productId: productId,
+                title: product.title,
                 price: product.price,
                 quantity: quantity,
                 thumbnailImage: product.thumbnailImage
             )
-            cartItems.append(newItem)
-            cartRef.document(newItem.id.uuidString).setData([
-                "productId": newItem.productId.uuidString,
-                "name": newItem.name,
+            
+            var ref: DocumentReference? = nil
+            ref = cartRef.addDocument(data: [
+                "productId": newItem.productId,
+                "title": newItem.title,
                 "price": newItem.price,
                 "quantity": newItem.quantity,
                 "thumbnailImage": newItem.thumbnailImage
@@ -57,12 +69,21 @@ class CartManager: ObservableObject {
                     print("Ошибка при добавлении товара: \(error.localizedDescription)")
                 } else {
                     print("Товар успешно добавлен в корзину")
+                    
+                    // Присваиваем новый id элементу
+                    if let documentId = ref?.documentID {
+                        var newItemWithID = newItem
+                        newItemWithID.id = documentId
+                        self.cartItems.append(newItemWithID)
+                    } else {
+                        print("Ошибка: не удалось получить идентификатор нового документа.")
+                    }
                 }
             }
         }
     }
     
-    func increaseQuantity(of productId: UUID) {
+    func increaseQuantity(of productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             print("Пользователь не авторизован, корзина не будет сохранена.")
@@ -77,20 +98,25 @@ class CartManager: ObservableObject {
             
             let updatedItem = cartItems[index]
             
-            // Обновляем количество в Firestore
-            cartRef.document(updatedItem.id.uuidString).updateData([
-                "quantity": updatedItem.quantity
-            ]) { error in
-                if let error = error {
-                    print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
-                } else {
-                    print("Количество товара успешно увеличено")
+            // Проверяем, что updatedItem.id не равен nil
+            if let itemId = updatedItem.id {
+                // Обновляем количество в Firestore
+                cartRef.document(itemId).updateData([
+                    "quantity": updatedItem.quantity
+                ]) { error in
+                    if let error = error {
+                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                    } else {
+                        print("Количество товара успешно увеличено")
+                    }
                 }
+            } else {
+                print("Ошибка: отсутствует идентификатор элемента корзины.")
             }
         }
     }
 
-    func decreaseQuantity(of productId: UUID) {
+    func decreaseQuantity(of productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             print("Пользователь не авторизован, корзина не будет сохранена.")
@@ -104,25 +130,33 @@ class CartManager: ObservableObject {
                 cartItems[index].quantity -= 1
                 
                 let updatedItem = cartItems[index]
-                cartRef.document(updatedItem.id.uuidString).updateData([
-                    "quantity": updatedItem.quantity
-                ]) { error in
-                    if let error = error {
-                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
-                    } else {
-                        print("Количество товара успешно увеличено")
+                
+                if let itemId = updatedItem.id {
+                    cartRef.document(itemId).updateData([
+                        "quantity": updatedItem.quantity
+                    ]) { error in
+                        if let error = error {
+                            print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                        } else {
+                            print("Количество товара успешно уменьшено")
+                        }
                     }
+                } else {
+                    print("Ошибка: отсутствует идентификатор элемента корзины.")
                 }
             } else {
                 // Если количество равно 1, удаляем товар
-                let documentId = cartItems[index].id.uuidString
-                cartRef.document(documentId).delete { [weak self] error in
-                    if let error = error {
-                        print("Ошибка при удалении товара: \(error.localizedDescription)")
-                    } else {
-                        print("Товар успешно удален из Firestore")
-                        self?.cartItems.remove(at: index)
+                if let documentId = cartItems[index].id {
+                    cartRef.document(documentId).delete { [weak self] error in
+                        if let error = error {
+                            print("Ошибка при удалении товара: \(error.localizedDescription)")
+                        } else {
+                            print("Товар успешно удален из Firestore")
+                            self?.cartItems.remove(at: index)
+                        }
                     }
+                } else {
+                    print("Ошибка: отсутствует идентификатор элемента корзины.")
                 }
             }
         } else {
@@ -130,7 +164,7 @@ class CartManager: ObservableObject {
         }
     }
 
-    func removeFromCart(productId: UUID) {
+    func removeFromCart(productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             print("Пользователь не авторизован, корзина не будет сохранена.")
@@ -140,17 +174,19 @@ class CartManager: ObservableObject {
         let cartRef = db.collection("users").document(userId).collection("carts")
         
         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
-            let itemId = cartItems[index].id.uuidString
-            
-            // Сначала пытаемся удалить из базы данных
-            cartRef.document(itemId).delete { [weak self] error in
-                if let error = error {
-                    print("Ошибка при удалении товара из корзины: \(error.localizedDescription)")
-                } else {
-                    print("Товар успешно удален из корзины в базе данных")
-                    // Только после успешного удаления из базы удаляем из локального массива
-                    self?.cartItems.remove(at: index)
+            if let itemId = cartItems[index].id {
+                // Сначала пытаемся удалить из базы данных
+                cartRef.document(itemId).delete { [weak self] error in
+                    if let error = error {
+                        print("Ошибка при удалении товара из корзины: \(error.localizedDescription)")
+                    } else {
+                        print("Товар успешно удален из корзины в базе данных")
+                        // Только после успешного удаления из базы удаляем из локального массива
+                        self?.cartItems.remove(at: index)
+                    }
                 }
+            } else {
+                print("Ошибка: отсутствует идентификатор элемента корзины.")
             }
         } else {
             print("Товар с таким ID не найден в корзине")
@@ -161,31 +197,6 @@ class CartManager: ObservableObject {
         return cartItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 
-//    private func saveCartToDatabase() {
-//        let db = Firestore.firestore()
-//        guard let userId = Auth.auth().currentUser?.uid else {
-//            print("Пользователь не авторизован, корзина не будет сохранена.")
-//            return
-//        }
-//        
-//        let cartData = cartItems.map { item in
-//            return [
-//                "productId": item.productId.uuidString,
-//                "name": item.name,
-//                "price": item.price,
-//                "quantity": item.quantity,
-//                "thumbnailImage": item.thumbnailImage
-//            ] as [String: Any]
-//        }
-//        
-//        db.collection("carts").document(userId).setData(["items": cartData]) { error in
-//            if let error = error {
-//                print("Ошибка при сохранении корзины: \(error.localizedDescription)")
-//            } else {
-//                print("Корзина успешно сохранена")
-//            }
-//        }
-//    }
 
     func loadCartFromDatabase() {
         let db = Firestore.firestore()
@@ -203,18 +214,19 @@ class CartManager: ObservableObject {
             }
             
             if let snapshot = snapshot {
-                self.cartItems = snapshot.documents.compactMap { document in
-                    guard let productIdString = document["productId"] as? String,
-                          let productId = UUID(uuidString: productIdString),
-                          let name = document["name"] as? String,
-                          let price = document["price"] as? Double,
-                          let quantity = document["quantity"] as? Int,
-                          let thumbnailImage = document["thumbnailImage"] as? String else { return nil }
+                self.cartItems = snapshot.documents.compactMap { document -> CartItem? in
+                    let data = document.data()
+                    
+                    guard let productId = data["productId"] as? String,
+                          let title = data["title"] as? String,
+                          let price = data["price"] as? Double,
+                          let quantity = data["quantity"] as? Int,
+                          let thumbnailImage = data["thumbnailImage"] as? String else { return nil }
                     
                     return CartItem(
-                        id: UUID(uuidString: document.documentID) ?? UUID(),
+                        id: document.documentID,
                         productId: productId,
-                        name: name,
+                        title: title,
                         price: price,
                         quantity: quantity,
                         thumbnailImage: thumbnailImage

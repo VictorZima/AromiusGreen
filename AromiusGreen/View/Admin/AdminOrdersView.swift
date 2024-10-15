@@ -45,12 +45,10 @@ struct AdminOrderRow: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Order ID: \(order.id ?? "N/A")")
             Text("Total Amount: \(order.totalAmount.formattedPrice()) ₪")
             Text("Current Status: \(order.status)")
             Text("Last Updated: \(order.updatedAt?.formatted() ?? "N/A")")
             
-            // Изменение статуса
             Button("Change Status") {
                 isEditingStatus.toggle()
             }
@@ -59,7 +57,6 @@ struct AdminOrderRow: View {
             }
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
     }
 }

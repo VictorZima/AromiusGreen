@@ -24,20 +24,18 @@ struct OrdersView: View {
                         .font(.title2)
                         .padding()
                 } else {
-//                    List(orders) { order in
-//                        OrderRow(order: order)
-//                    }
-//                    .listStyle(PlainListStyle())
                     ScrollView {
                         VStack(spacing: 15) {
-                            ForEach(orders) { order in
+                            ForEach(orders, id: \.id) { order in
                                 OrderRow(order: order)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.white)
-                                            .shadow(color: .gray.opacity(0.4), radius: 5, x: 0, y: 3)
-                                    )
-                                    .padding(.horizontal)
+//                                    .background(
+//                                        RoundedRectangle(cornerRadius: 10)
+//                                            .fill(Color.white)
+//                                            .shadow(color: .gray.opacity(0.4), radius: 5, x: 0, y: 3)
+//                                    )
+//                                    .padding(.horizontal)
+                                Divider()
+                                    .padding(.leading, 14)
                             }
                         }
                     }
@@ -75,9 +73,13 @@ struct OrderRow: View {
             
             HStack {
                 Spacer()
-                Text("Total Amount: \(order.totalAmount.formattedPrice()) ₪")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
+                VStack (alignment: .trailing) {
+                    Text("Delivery Amount: \(order.deliveryCost.formattedPrice()) ₪")
+                        .font(.subheadline)
+                    Text("Total Amount: \(order.totalAmount.formattedPrice()) ₪")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                }
             }
             .padding(.top, 10)
         }
@@ -89,12 +91,11 @@ struct OrderRow: View {
 struct OrderItemsRow: View {
     var item: CartItem
     var index: Int
-    let storageRef = Storage.storage().reference(withPath: "items_images/thumbnails/")
     @State private var loadedImage: Image?
     
     var body: some View {
         HStack {
-            Text("\(index). \(item.name)")
+            Text("\(index). \(item.title)")
                 .font(.subheadline)
                 .lineLimit(1)
             Spacer()
@@ -102,43 +103,6 @@ struct OrderItemsRow: View {
                 .font(.subheadline)
             Text("\(item.price.formattedPrice()) ₪")
                 .font(.subheadline)
-            
-            
-//            Spacer()
-            
-//            let imageRef = storageRef.child(item.thumbnailImage)
-//            
-//            if let loadedImage = loadedImage {
-//                loadedImage
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .frame(width: 100)
-//                    .background(.gray.opacity(0.075))
-//            } else {
-//                Image(systemName: "photo")
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .frame(width: 100)
-//                    .background(.gray.opacity(0.075))
-//                    .foregroundColor(.gray)
-//                    .opacity(0.8)
-//                    .onAppear {
-//                        loadImage(from: imageRef)
-//                    }
-//            }
-            
-        }
-    }
-    
-    func loadImage(from imageRef: StorageReference) {
-        imageRef.downloadURL { url, error in
-            if let url = url {
-                Task {
-                    loadedImage = await ImageLoader.loadImage(from: url)
-                }
-            } else {
-                print("Error fetching image URL: \(error?.localizedDescription ?? "No error description")")
-            }
         }
     }
 }

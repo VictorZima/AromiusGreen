@@ -5,11 +5,11 @@
 //  Created by VictorZima on 20/09/2024.
 //
 
-import Foundation
+import FirebaseFirestoreSwift
 
-struct Cart: Identifiable {
-    var id: UUID = UUID()
-    var userId: String? // Может быть nil для гостевой корзины на будущее
+struct Cart: Identifiable, Codable {
+    @DocumentID var id: String?
+    var userId: String?
     var items: [CartItem]
     
     var totalAmount: Double {
@@ -18,5 +18,10 @@ struct Cart: Identifiable {
     
     var totalItems: Int {
         return items.reduce(0) { $0 + $1.quantity }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case userId
+        case items
     }
 }

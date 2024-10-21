@@ -101,9 +101,8 @@ struct ProductCell: View {
     
     var body: some View {
             NavigationLink {
-//                                ProductView(productId: product.productId)
                 ProductView(productId: product.productId, onRemoveFromFavorites: {
-                              onRemove(product) // Удаляем товар из списка
+                              onRemove(product)
                           })
             } label: {
                 VStack(alignment: .leading) {
@@ -131,7 +130,6 @@ struct ProductCell: View {
                     }
                     
                     VStack(alignment: .leading) {
-                        
                         Text("\(product.title)")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Color.black)
@@ -146,14 +144,12 @@ struct ProductCell: View {
                         Text("\(product.productLineName)")
                             .font(.system(size: 10))
                             .foregroundStyle(Color.gray)
-                        
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 15)
                 }
                 .frame(maxWidth: .infinity)
             }
-
     }
 }
 

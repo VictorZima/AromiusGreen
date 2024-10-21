@@ -11,9 +11,12 @@ struct Cart: Identifiable, Codable {
     @DocumentID var id: String?
     var userId: String?
     var items: [CartItem]
+    var selectedDeliveryMethod: String?
+    var deliveryCost: Double?
     
     var totalAmount: Double {
-        return items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+        let itemTotal = items.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+        return itemTotal + (deliveryCost ?? 0.0)
     }
     
     var totalItems: Int {
@@ -23,5 +26,7 @@ struct Cart: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case userId
         case items
+        case selectedDeliveryMethod
+        case deliveryCost
     }
 }

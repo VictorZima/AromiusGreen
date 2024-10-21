@@ -22,7 +22,7 @@ struct AdminOrdersView: View {
                     .font(.title2)
                     .padding()
             } else {
-                List(orders) { order in
+                List(orders, id: \.id) { order in
                     AdminOrderRow(order: order)
                 }
                 .listStyle(PlainListStyle())
@@ -30,7 +30,7 @@ struct AdminOrdersView: View {
         }
         .onAppear {
             isLoading = true
-            dataManager.fetchAllOrders { fetchedOrders in
+            dataManager.fetchAllOrdersForAdmin { fetchedOrders in
                 self.orders = fetchedOrders
                 isLoading = false
             }
@@ -45,6 +45,19 @@ struct AdminOrderRow: View {
     
     var body: some View {
         VStack(alignment: .leading) {
+            
+                VStack(alignment: .leading) {
+                    Text("Адрес доставки:")
+                        .font(.subheadline)
+                        .padding(.top, 5)
+                    Text("\(order.deliveryAddress.firstName) \(order.deliveryAddress.lastName)")
+                    Text("\(order.deliveryAddress.phone)")
+                    Text("\(order.deliveryAddress.street), \(order.deliveryAddress.city)")
+                    Text("\(order.deliveryAddress.zipCode ?? ""), \(order.deliveryAddress.country)")
+                }
+                .font(.footnote)
+
+            
             Text("Total Amount: \(order.totalAmount.formattedPrice()) ₪")
             Text("Current Status: \(order.status)")
             Text("Last Updated: \(order.updatedAt?.formatted() ?? "N/A")")
@@ -64,7 +77,7 @@ struct AdminOrderRow: View {
 struct StatusChangeSheet: View {
     @Binding var order: Order
     @Binding var selectedStatus: String
-    let statuses = ["Pending", "Shipped", "Delivered", "Cancelled"]
+    let statuses = ["Placed", "Processing", "In Transit", "Awaiting Pickup", "Received"]
     @EnvironmentObject var dataManager: DataManager
     
     var body: some View {
@@ -77,7 +90,7 @@ struct StatusChangeSheet: View {
             .pickerStyle(.wheel)
             
             Button("Save Status") {
-                dataManager.updateOrderStatus(order: order, newStatus: selectedStatus)
+//                dataManager.updateOrderStatus(order: order, newStatus: selectedStatus)
             }
             .padding()
         }

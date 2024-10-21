@@ -17,26 +17,12 @@ struct OrdersView: View {
     var body: some View {
         VStack {
             if authManager.isUserAuthenticated {
-                if isLoading {
-                    ProgressView("Loading orders...")
-                } else if orders.isEmpty {
-                    Text("No orders found.")
-                        .font(.title2)
-                        .padding()
-                } else {
-                    ScrollView {
-                        VStack(spacing: 15) {
-                            ForEach(orders, id: \.id) { order in
-                                OrderRow(order: order)
-//                                    .background(
-//                                        RoundedRectangle(cornerRadius: 10)
-//                                            .fill(Color.white)
-//                                            .shadow(color: .gray.opacity(0.4), radius: 5, x: 0, y: 3)
-//                                    )
-//                                    .padding(.horizontal)
-                                Divider()
-                                    .padding(.leading, 14)
-                            }
+                ScrollView {
+                    VStack(spacing: 15) {
+                        ForEach(orders, id: \.id) { order in
+                            OrderRow(order: order)
+                            Divider()
+                                .padding(.leading, 14)
                         }
                     }
                 }
@@ -61,18 +47,19 @@ struct OrderRow: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Status: \(order.status)")
-            Text("Date: \(order.createdAt, format: .dateTime.year().month().day())")
+            StatusProgressView(statuses: ["Placed", "Processing", "In Transit", "Awaiting Pickup", "Received"], currentStatus: order.status, statusHistory: order.statusHistory)
+            
             Text("Items in this order:")
                 .font(.headline)
                 .padding(.top, 5)
             
-            ForEach(Array(order.items.enumerated()), id: \.element.id) { index, item in
-                OrderItemsRow(item: item, index: index + 1)
+            ForEach(order.items.indices, id: \.self) { index in
+                OrderItemsRow(item: order.items[index], index: index + 1)
             }
             
             HStack {
                 Spacer()
+                
                 VStack (alignment: .trailing) {
                     Text("Delivery Amount: \(order.deliveryCost.formattedPrice()) ₪")
                         .font(.subheadline)
@@ -91,14 +78,18 @@ struct OrderRow: View {
 struct OrderItemsRow: View {
     var item: CartItem
     var index: Int
-    @State private var loadedImage: Image?
     
     var body: some View {
-        HStack {
-            Text("\(index). \(item.title)")
+        HStack(alignment: .top) {
+            Text("\(index).")
+                .font(.footnote)
+            
+            Text(item.title)
                 .font(.subheadline)
-                .lineLimit(1)
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
             Spacer()
+            
             Text("Qty: \(item.quantity)")
                 .font(.subheadline)
             Text("\(item.price.formattedPrice()) ₪")
@@ -106,6 +97,132 @@ struct OrderItemsRow: View {
         }
     }
 }
+
+struct StatusProgressView: View {
+    let statuses: [String]
+    let currentStatus: String
+    let statusHistory: [OrderStatusHistory]
+    
+    var body: some View {
+            
+        HStack(alignment: .center, spacing: 5) {
+                ForEach(0..<statuses.count, id: \.self) { index in
+                    VStack(alignment: .center) {
+                        Text(statuses[index])
+                            .font(.caption)
+                            .foregroundColor(.black)
+                            .lineLimit(1)
+                            .multilineTextAlignment(.center)
+                        
+                        ZStack {
+                            Circle()
+                                .fill(isCompleted(index: index) ? Color.green : Color.gray)
+                                .frame(width: 20, height: 20)
+                            
+                            Circle()
+                                .fill(isCompleted(index: index) ? Color.green : Color.white)
+                                .frame(width: 8, height: 8)
+                            
+                        }
+                        
+                        if let statusHistoryItem = getStatusHistory(for: statuses[index]) {
+                            Text(statusHistoryItem.date, format: .dateTime.year().month().day())
+                                .font(.system(size: 8))
+                                .foregroundColor(.gray)
+                        } else {
+                            Text("")
+                                .font(.system(size: 8))
+                                .foregroundColor(.gray)
+                        }
+                        
+                    }
+                    .opacity(isCompleted(index: index) ? 1 : 0.4)
+                }
+                
+            }
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 100)
+    }
+    
+    private func isCompleted(index: Int) -> Bool {
+        guard let currentIndex = statuses.firstIndex(of: currentStatus) else { return false }
+        
+        return index <= currentIndex
+    }
+    
+    private func getStatusHistory(for status: String) -> OrderStatusHistory? {
+        return statusHistory.first { $0.status == status }
+    }
+}
+
+//struct StatusProgressView: View {
+//    let statuses: [String]
+//    let currentStatus: String
+//    let statusHistory: [OrderStatusHistory]
+//    
+//    var body: some View {
+//        VStack {
+//            ZStack {
+//                HStack(spacing: 0) {
+//                    ForEach(0..<statuses.count - 1, id: \.self) { index in
+//                        Rectangle()
+//                            .fill(isCompleted(index: index + 1) ? Color.green : Color.gray)
+//                            .frame(height: 2)
+//                        Spacer()
+//                    }
+//                }
+//                .padding(.horizontal, 20)
+////                .offset(y: 10)
+//                
+//                HStack(spacing: 0) {
+//                    ForEach(0..<statuses.count, id: \.self) { index in
+//                        VStack(spacing: 5) {
+//                            Text(statuses[index])
+//                                .font(.caption)
+//                                .foregroundColor(.black)
+//                                .lineLimit(1)
+//                                .multilineTextAlignment(.center)
+//                            
+//                            ZStack {
+//                                Circle()
+//                                    .fill(isCompleted(index: index) ? Color.green : Color.gray)
+//                                    .frame(width: 20, height: 20)
+//                                
+//                                Circle()
+//                                    .fill(isCompleted(index: index) ? Color.green : Color.white)
+//                                    .frame(width: 8, height: 8)
+//                                
+//                            }
+//                            
+//                            if let statusHistoryItem = getStatusHistory(for: statuses[index]) {
+//                                Text(statusHistoryItem.date, format: .dateTime.year().month().day())
+//                                    .font(.system(size: 8))
+//                                    .foregroundColor(.gray)
+//                            } else {
+//                                Text("")
+//                            }
+//                        }
+//                        
+//                        if index != statuses.count - 1 {
+//                            Spacer()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        .padding(.horizontal)
+//    }
+//    
+//    private func isCompleted(index: Int) -> Bool {
+//        guard let currentIndex = statuses.firstIndex(of: currentStatus) else { return false }
+//        
+//        return index <= currentIndex
+//    }
+//    
+//    private func getStatusHistory(for status: String) -> OrderStatusHistory? {
+//        return statusHistory.first { $0.status == status }
+//    }
+//}
 
 #Preview {
     OrdersView()

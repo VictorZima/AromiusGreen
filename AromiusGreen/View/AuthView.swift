@@ -26,14 +26,12 @@ struct AuthView: View {
             Text(isRegistration ? "Create Account" : "Log In")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
-            
             TextField("Email", text: $email)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
-            
             SecureField("Password", text: $password)
                 .padding()
                 .background(Color.gray.opacity(0.2))
@@ -52,16 +50,8 @@ struct AuthView: View {
                     .padding()
             }
             
-            Button(action: isRegistration ? register : login) {
-                Text(isRegistration ? "Sign Up" : "Log In")
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
+            CustomButton(title: "\(isRegistration ? "Sign Up" : "Log In")", widthSize: .large, action: isRegistration ? register : login)
             .padding(.top, 20)
-            
             Spacer()
             
             Button(action: {

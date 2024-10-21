@@ -14,27 +14,38 @@ enum ButtonWidthSize {
 struct CustomButton: View {
     var title: String
     var widthSize: ButtonWidthSize
-    var action: () -> Void
-
+    var action: (() -> Void)?
+    var destination: (() -> AnyView)?
+    
     var body: some View {
-        Button(action: {
-            action()
-        }) {
-            Text(title)
-                .foregroundColor(.darkBlueItem)
-                .frame(width: width(for: widthSize))
-                .padding(.vertical, 12)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.darkBlueItem, lineWidth: 1)
-                )
-                
+        if let destination = destination {
+            NavigationLink(destination: destination()) {
+                buttonContent
+            }
+            .padding(.horizontal)
+        } else {
+            Button(action: {
+                action?()
+            }) {
+                buttonContent
+            }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
     }
-
+    
+    private var buttonContent: some View {
+        Text(title)
+            .foregroundColor(.darkBlueItem)
+            .frame(width: width(for: widthSize))
+            .padding(.vertical, 12)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.darkBlueItem, lineWidth: 1)
+            )
+    }
+    
     private func width(for size: ButtonWidthSize) -> CGFloat {
         switch size {
         case .small: return 150
@@ -42,4 +53,17 @@ struct CustomButton: View {
         case .large: return 250
         }
     }
+}
+
+#Preview {
+    VStack(spacing: 20) {
+        CustomButton(title: "Click me", widthSize: .medium, action: {
+            print("Button clicked")
+        })
+        
+        CustomButton(title: "Go to next", widthSize: .large, destination: {
+            AnyView(Text("Next screen"))
+        })
+    }
+    .padding()
 }

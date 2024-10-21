@@ -9,9 +9,10 @@ import SwiftUI
 import FirebaseStorage
 
 struct CartItemCellView: View {
-    @EnvironmentObject var cartManager: CartManager
-    var item: CartItem
     let storageRef = Storage.storage().reference(withPath: "items_images/thumbnails/")
+    var item: CartItem
+    
+    @EnvironmentObject var cartManager: CartManager
     @State private var loadedImage: Image?
     
     var body: some View {
@@ -53,11 +54,11 @@ struct CartItemCellView: View {
                     .font(.headline)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                
                 Text("\(item.price.formattedPrice()) ₽")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                 Spacer()
+                
                 HStack {
                     Button {
                         cartManager.decreaseQuantity(of: item.productId)
@@ -66,9 +67,11 @@ struct CartItemCellView: View {
                             .font(.system(size: 20))
                     }
                     .buttonStyle(BorderlessButtonStyle())
+                    
                     Text("\(item.quantity)")
                         .font(.subheadline)
                         .padding(.horizontal, 10)
+                    
                     Button {
                         cartManager.increaseQuantity(of: item.productId)
                     } label: {
@@ -79,9 +82,11 @@ struct CartItemCellView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.trailing, 10)
             
             VStack {
                 Spacer()
+                
                 Button {
                     cartManager.removeFromCart(productId: item.productId)
                 } label: {
@@ -92,7 +97,7 @@ struct CartItemCellView: View {
             }
         }
         .padding(.vertical, 3)
-        .padding(.horizontal, 7)
-
+        .padding(.leading, 7)
+        .padding(.trailing, 17)
     }
 }

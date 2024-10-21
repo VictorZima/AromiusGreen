@@ -11,12 +11,10 @@ struct CartView: View {
     @EnvironmentObject var cartManager: CartManager
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dataManager: DataManager
+    
     @State private var isShowingAuthView = false
     @State private var selectedDeliveryMethod = "Self-pickup"
-    let deliveryMethods = ["Self-pickup", "Paid delivery"]
     @State private var deliveryCost: Double = 0.0
-    @State private var isOrderSuccessful = false
-    @State private var isShowingOrderAlert = false
     
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 1)
     
@@ -49,62 +47,57 @@ struct CartView: View {
                             }
                             
                             VStack {
-                                HStack {
-                                    Text("Delivery")
-                                    Spacer()
-                                    Picker("Delivery Method", selection: $selectedDeliveryMethod) {
-                                        ForEach(deliveryMethods, id: \.self) {
-                                            Text($0)
-                                        }
-                                    }
-                                    .pickerStyle(MenuPickerStyle())
-                                    .onChange(of: selectedDeliveryMethod) { method in
-                                        if method == "Paid delivery" {
-                                            deliveryCost = 30.0
-                                        } else {
-                                            deliveryCost = 0.0
-                                        }
-                                    }
-                                }
-                                .padding(.bottom)
+//                                HStack {
+//                                    Text("Delivery")
+//                                    Spacer()
+//                                    Picker("Delivery Method", selection: $selectedDeliveryMethod) {
+//                                        ForEach(deliveryMethods, id: \.self) {
+//                                            Text($0)
+//                                        }
+//                                    }
+//                                    .pickerStyle(MenuPickerStyle())
+//                                    .onChange(of: selectedDeliveryMethod) { method in
+//                                        if method == "Paid delivery" {
+//                                            deliveryCost = 30.0
+//                                        } else {
+//                                            deliveryCost = 0.0
+//                                        }
+//                                    }
+//                                }
+//                                .padding(.bottom)
+//                                Spacer()
+//                                
+//                                HStack {
+//                                    Text("Total without delivery:")
+//                                        .font(.headline)
+//                                    Spacer()
+//                                    Text("\(cartManager.totalPrice().formattedPrice()) ₪")
+//                                        .font(.headline)
+//                                }
+//                                
+//                                HStack {
+//                                    Text("Delivery Cost:")
+//                                        .font(.headline)
+//                                    Spacer()
+//                                    Text("\(deliveryCost, specifier: "%.2f") ₪")
+//                                        .font(.headline)
+//                                }
+//                                
+//                                HStack {
+//                                    Text("Total with delivery:")
+//                                        .font(.headline)
+//                                    Spacer()
+//                                    Text("\((cartManager.totalPrice() + deliveryCost).formattedPrice()) ₪")
+//                                        .font(.headline)
+//                                }
                                 
-                                Spacer()
-                                HStack {
-                                    Text("Total without delivery:")
-                                        .font(.headline)
-                                    Spacer()
-                                    Text("\(cartManager.totalPrice().formattedPrice()) ₪")
-                                        .font(.headline)
+                                CustomButton(title: "Оформить заказ", widthSize: .large, destination: {
+                                    
+                                    AnyView(DeliveryMethodView())
                                 }
-                                
-                                HStack {
-                                    Text("Delivery Cost:")
-                                        .font(.headline)
-                                    Spacer()
-                                    Text("\(deliveryCost, specifier: "%.2f") ₪")
-                                        .font(.headline)
-                                }
-                                
-                                HStack {
-                                    Text("Total with delivery:")
-                                        .font(.headline)
-                                    Spacer()
-                                    Text("\((cartManager.totalPrice() + deliveryCost).formattedPrice()) ₪")
-                                        .font(.headline)
-                                }
-                                
-                                Button {
-                                    placeOrder()
-                                } label: {
-                                    Text("Proceed to Checkout")
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color.blue)
-                                        .cornerRadius(10)
-                                }
-                                .padding(.horizontal)
-                                .padding(.bottom, 6)
+                                )
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 6)
                             }
                             .padding()
                         }
@@ -118,6 +111,7 @@ struct CartView: View {
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()
+                        
                         Button {
                             isShowingAuthView = true
                         } label: {
@@ -133,7 +127,6 @@ struct CartView: View {
                         .padding(.horizontal, 40)
                     }
                     .padding()
-                    
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -141,28 +134,8 @@ struct CartView: View {
                 AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)
             }
-            .alert(isPresented: $isShowingOrderAlert) {
-                Alert(
-                    title: Text(isOrderSuccessful ? "Order Successful" : "Order Failed"),
-                    message: Text(isOrderSuccessful ? "Your order has been placed successfully." : "Failed to place the order."),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
         }
     }
-    
-    func placeOrder() {
-        dataManager.createOrder(cartItems: cartManager.cartItems, totalAmount: cartManager.totalPrice(), deliveryMethod: selectedDeliveryMethod, deliveryCost: deliveryCost) { success in
-            if success {
-                isOrderSuccessful = true
-                cartManager.clearCart()
-                isShowingOrderAlert = true
-            } else {
-                isShowingOrderAlert = false
-            }
-        }
-    }
-
 }
 
 #Preview {

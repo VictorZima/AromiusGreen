@@ -119,7 +119,8 @@ struct ProductView: View {
                                 cartManager.addToCart(product: product)
                             }
                         }
-                        .padding(.bottom)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
                     }
                 }
                 .padding()

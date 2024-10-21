@@ -17,17 +17,19 @@ struct Order: Identifiable, Codable {
     var createdAt: Date
     var deliveryMethod: String
     var deliveryCost: Double
+    var deliveryAddress: Address
     var updatedAt: Date?
     var statusHistory: [OrderStatusHistory] = []
     
-    init(userId: String, items: [CartItem], totalAmount: Double, deliveryMethod: String, deliveryCost: Double) {
+    init(userId: String, items: [CartItem], totalAmount: Double, deliveryMethod: String, deliveryCost: Double, deliveryAddress: Address) {
         self.userId = userId
         self.items = items
         self.totalAmount = totalAmount
-        self.status = "Pending"
+        self.status = "Placed"
         self.createdAt = Date()
         self.deliveryMethod = deliveryMethod
         self.deliveryCost = deliveryCost
+        self.deliveryAddress = deliveryAddress
     }
     
     enum CodingKeys: String, CodingKey {
@@ -38,6 +40,7 @@ struct Order: Identifiable, Codable {
         case createdAt
         case deliveryMethod
         case deliveryCost
+        case deliveryAddress
         case updatedAt
         case statusHistory
     }

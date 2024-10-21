@@ -16,8 +16,9 @@ class DataManager: ObservableObject {
     @Published var categories: [Category] = []
     @Published var productLines: [ProductLine] = []
     @Published var manufacturies: [Manufacture] = []
-    private var productsListener: ListenerRegistration?
+    @Published var deliveryMethods: [DeliveryMethod] = []
     
+    private var productsListener: ListenerRegistration?
     var currentUserId: String {
         Auth.auth().currentUser?.uid ?? ""
     }
@@ -32,8 +33,6 @@ class DataManager: ObservableObject {
     deinit {
         productsListener?.remove()
     }
-    
- 
     
     func addProductsListener() {
         let db = Firestore.firestore()
@@ -50,7 +49,7 @@ class DataManager: ObservableObject {
             self.products = snapshot.documents.compactMap { document in
                 do {
                     var product = try document.data(as: Product.self)
-                    product.id = document.documentID  // Присваиваем ID вручную
+                    product.id = document.documentID
                     return product
                 } catch {
                     print("Ошибка при декодировании продукта: \(error.localizedDescription)")
@@ -270,7 +269,7 @@ class DataManager: ObservableObject {
     }
     
     
-    func createOrder(cartItems: [CartItem], totalAmount: Double, deliveryMethod: String, deliveryCost: Double, completion: @escaping (Bool) -> Void) {
+    func createOrder(cartItems: [CartItem], totalAmount: Double, deliveryMethod: String, deliveryCost: Double, deliveryAddress: Address, completion: @escaping (Bool) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("Пользователь не авторизован")
             completion(false)
@@ -282,13 +281,15 @@ class DataManager: ObservableObject {
         
         let finalTotalAmount = totalAmount + deliveryCost
         
-        let order = Order(
+        var order = Order(
             userId: userId,
             items: cartItems,
             totalAmount: finalTotalAmount,
             deliveryMethod: deliveryMethod,
-            deliveryCost: deliveryCost
+            deliveryCost: deliveryCost,
+            deliveryAddress: deliveryAddress
         )
+        order.statusHistory.append(OrderStatusHistory(status: order.status))
         
         do {
             try orderRef.setData(from: order) { error in
@@ -306,20 +307,7 @@ class DataManager: ObservableObject {
         }
     }
     
-    func updateOrderStatus(orderId: String, newStatus: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        let orderRef = db.collection("orders").document(orderId)
-        
-        orderRef.updateData(["status": newStatus]) { error in
-            if let error = error {
-                print("Ошибка при обновлении статуса заказа: \(error.localizedDescription)")
-                completion(false)
-            } else {
-                print("Статус заказа обновлен на \(newStatus)")
-                completion(true)
-            }
-        }
-    }
+    
     
     func fetchOrders(for userId: String, completion: @escaping ([Order]) -> Void) {
         let db = Firestore.firestore()
@@ -350,7 +338,7 @@ class DataManager: ObservableObject {
         }
     }
     
-    func fetchAllOrders(completion: @escaping ([Order]) -> Void) {
+    func fetchAllOrdersForAdmin(completion: @escaping ([Order]) -> Void) {
         let db = Firestore.firestore()
         db.collection("orders").getDocuments { (snapshot, error) in
             if let error = error {
@@ -361,7 +349,14 @@ class DataManager: ObservableObject {
             
             if let snapshot = snapshot {
                 let orders = snapshot.documents.compactMap { document -> Order? in
-                    try? document.data(as: Order.self)
+                    do {
+                        var order = try document.data(as: Order.self)
+                        order.id = document.documentID
+                        return order
+                    } catch {
+                        print("Ошибка при декодировании заказа: \(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 completion(orders)
             } else {
@@ -370,33 +365,38 @@ class DataManager: ObservableObject {
         }
     }
     
-    func updateOrderStatus(order: Order, newStatus: String) {
+    func updateOrderStatus(orderId: String, newStatus: String, completion: @escaping (Bool) -> Void) {
         let db = Firestore.firestore()
-        guard let orderId = order.id else {
-            print("Ошибка: отсутствует идентификатор заказа.")
-            return
-        }
         let orderRef = db.collection("orders").document(orderId)
         
-        let newHistoryRecord = OrderStatusHistory(status: newStatus)
-        var updatedHistory = order.statusHistory
-        updatedHistory.append(newHistoryRecord)
-        
-        do {
-            let encodedHistory = try updatedHistory.map { try Firestore.Encoder().encode($0) }
-            orderRef.updateData([
-                "status": newStatus,
-                "updatedAt": Date(),
-                "statusHistory": encodedHistory
-            ]) { error in
-                if let error = error {
-                    print("Ошибка при обновлении статуса заказа: \(error.localizedDescription)")
-                } else {
-                    print("Статус заказа успешно обновлен")
+        orderRef.getDocument { document, error in
+            if let document = document, document.exists {
+                do {
+                    var order = try document.data(as: Order.self)
+                    
+                    let newStatusHistory = OrderStatusHistory(status: newStatus) // Добавляем статус с текущим временем
+                    order.statusHistory.append(newStatusHistory)
+                    
+                    order.status = newStatus
+                    order.updatedAt = Date() // Обновляем время обновления заказа
+                    
+                    try orderRef.setData(from: order) { error in
+                        if let error = error {
+                            print("Ошибка при обновлении заказа: \(error.localizedDescription)")
+                            completion(false)
+                        } else {
+                            print("Статус заказа успешно обновлен")
+                            completion(true)
+                        }
+                    }
+                } catch {
+                    print("Ошибка при чтении данных заказа: \(error.localizedDescription)")
+                    completion(false)
                 }
+            } else {
+                print("Документ заказа не найден")
+                completion(false)
             }
-        } catch {
-            print("Ошибка при кодировании истории статусов: \(error.localizedDescription)")
         }
     }
     
@@ -414,7 +414,7 @@ class DataManager: ObservableObject {
             } else {
                 let addresses = snapshot?.documents.compactMap { document -> Address? in
                     var address = try? document.data(as: Address.self)
-                    address?.id = document.documentID // Вручную устанавливаем id
+                    address?.id = document.documentID
                     return address
                 } ?? []
                 completion(addresses)
@@ -535,6 +535,27 @@ class DataManager: ObservableObject {
             }
         }
     }
+    
+    func fetchDeliveryMethods(completion: @escaping ([DeliveryMethod]) -> Void) {
+        let db = Firestore.firestore()
+        let deliveryMethodsRef = db.collection("deliveryMethods")
+        
+        deliveryMethodsRef.getDocuments { snapshot, error in
+            if let error = error {
+                print("Ошибка при получении способов доставки: \(error.localizedDescription)")
+                completion([])
+            } else if let snapshot = snapshot {
+                let methods = snapshot.documents.compactMap { document -> DeliveryMethod? in
+                    var method = try? document.data(as: DeliveryMethod.self)
+                    method?.id = document.documentID
+                    return method
+                }
+                completion(methods)
+            } else {
+                completion([])
+            }
+        }
+    }
 }
 
 extension Firestore.Encoder {
@@ -542,5 +563,14 @@ extension Firestore.Encoder {
         var dict = try self.encode(value)
         dict.removeValue(forKey: "id")
         return dict
+    }
+}
+
+extension OrderStatusHistory {
+    var dictionary: [String: Any] {
+        return [
+            "status": status,
+            "date": Timestamp(date: date)
+        ]
     }
 }

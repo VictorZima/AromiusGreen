@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		28037CFA2CBE931B0046BD83 /* DeliveryMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28037CF92CBE931B0046BD83 /* DeliveryMethod.swift */; };
+		28037CFC2CC09CEA0046BD83 /* DeliveryMethodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28037CFB2CC09CEA0046BD83 /* DeliveryMethodView.swift */; };
 		2813A3872CB74BD0005A5E5D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A3862CB74BD0005A5E5D /* SettingsView.swift */; };
 		2813A3892CB74D56005A5E5D /* ShippingInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A3882CB74D56005A5E5D /* ShippingInfoView.swift */; };
 		2813A38B2CB74E45005A5E5D /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A38A2CB74E45005A5E5D /* Address.swift */; };
@@ -58,6 +60,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		28037CF92CBE931B0046BD83 /* DeliveryMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeliveryMethod.swift; sourceTree = "<group>"; };
+		28037CFB2CC09CEA0046BD83 /* DeliveryMethodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeliveryMethodView.swift; sourceTree = "<group>"; };
 		2813A3862CB74BD0005A5E5D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2813A3882CB74D56005A5E5D /* ShippingInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShippingInfoView.swift; sourceTree = "<group>"; };
 		2813A38A2CB74E45005A5E5D /* Address.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 				28915E8F2C9D5B5A00F7F04E /* Cart.swift */,
 				28915E912C9D5B7500F7F04E /* CartItem.swift */,
 				28BE1EF22CAC14370059BC01 /* Order.swift */,
+				28037CF92CBE931B0046BD83 /* DeliveryMethod.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -170,6 +175,7 @@
 				28FF49D52C0806AB00FA829C /* ContentView.swift */,
 				28AB8DE52C72D644006A81C5 /* AuthView.swift */,
 				28915E952C9D5D7100F7F04E /* CartView.swift */,
+				28037CFB2CC09CEA0046BD83 /* DeliveryMethodView.swift */,
 				28915EB72CA4E87500F7F04E /* CartItemCellView.swift */,
 				28BE1EF62CAD241E0059BC01 /* OrdersView.swift */,
 				288A98492C080C1C007ABC1C /* Home.swift */,
@@ -334,6 +340,7 @@
 				288A984E2C080C61007ABC1C /* InfoView.swift in Sources */,
 				28FF49D62C0806AB00FA829C /* ContentView.swift in Sources */,
 				288762CC2C91B84100886A66 /* ProductLine.swift in Sources */,
+				28037CFA2CBE931B0046BD83 /* DeliveryMethod.swift in Sources */,
 				28AB8DE02C718E71006A81C5 /* AuthManager.swift in Sources */,
 				28AB8DE62C72D644006A81C5 /* AuthView.swift in Sources */,
 				28915E942C9D5BE900F7F04E /* CartManager.swift in Sources */,
@@ -359,6 +366,7 @@
 				288762C32C9093F700886A66 /* AllProductsView.swift in Sources */,
 				28BE1EF12CA7EFB00059BC01 /* UnderConstructionView.swift in Sources */,
 				28915EB82CA4E87500F7F04E /* CartItemCellView.swift in Sources */,
+				28037CFC2CC09CEA0046BD83 /* DeliveryMethodView.swift in Sources */,
 				28AB8DDC2C718B6D006A81C5 /* ProfileView.swift in Sources */,
 				288A984A2C080C1C007ABC1C /* Home.swift in Sources */,
 				288A98452C080BCD007ABC1C /* Category.swift in Sources */,

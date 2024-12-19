@@ -12,10 +12,4 @@ struct DeliveryMethod: Identifiable, Codable, Equatable {
     var title: String
     var deliveryDescription: String
     var cost: Double
-    
-    enum CodingKeys: String, CodingKey {
-        case title
-        case deliveryDescription
-        case cost
-    }
 }

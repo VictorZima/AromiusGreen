@@ -14,10 +14,12 @@ import FirebaseFirestoreSwift
 class DataManager: ObservableObject {
     @Published var products: [Product] = []
     @Published var categories: [Category] = []
+    @Published var manufacturers: [Manufacturer] = []
     @Published var productLines: [ProductLine] = []
-    @Published var manufacturies: [Manufacture] = []
     @Published var deliveryMethods: [DeliveryMethod] = []
+    @Published var isDataLoaded = false
     
+    private var db = Firestore.firestore()
     private var productsListener: ListenerRegistration?
     var currentUserId: String {
         Auth.auth().currentUser?.uid ?? ""
@@ -25,17 +27,15 @@ class DataManager: ObservableObject {
     
     init() {
         fetchCategories()
-        fetchManufacturies()
-        fetchProductLines()
+        fetchManufacturersAdmin()
         addProductsListener()
     }
     
     deinit {
         productsListener?.remove()
     }
-    
+  
     func addProductsListener() {
-        let db = Firestore.firestore()
         let collectionRef = db.collection("items")
         
         productsListener = collectionRef.addSnapshotListener { snapshot, error in
@@ -56,11 +56,35 @@ class DataManager: ObservableObject {
                     return nil
                 }
             }
+            self.isDataLoaded = true // Обновляем флаг после загрузки данных
         }
     }
     
+//    func addProductsListener() {
+//        let collectionRef = db.collection("items")
+//        
+//        productsListener = collectionRef.addSnapshotListener { snapshot, error in
+//            guard let snapshot = snapshot else {
+//                if let error = error {
+//                    print("Ошибка при получении продуктов: \(error.localizedDescription)")
+//                }
+//                return
+//            }
+//
+//            self.products = snapshot.documents.compactMap { document in
+//                do {
+//                    var product = try document.data(as: Product.self)
+//                    product.id = document.documentID
+//                    return product
+//                } catch {
+//                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
+//                    return nil
+//                }
+//            }
+//        }
+//    }
+    
     func fetchProductById(productId: String, completion: @escaping (Product?) -> Void) {
-        let db = Firestore.firestore()
         let docRef = db.collection("items").document(productId)
 
         docRef.getDocument { document, error in
@@ -69,8 +93,7 @@ class DataManager: ObservableObject {
                 completion(nil)
             } else if let document = document, document.exists {
                 do {
-                    var product = try document.data(as: Product.self)
-                    product.id = document.documentID
+                    let product = try document.data(as: Product.self)
                     completion(product)
                 } catch {
                     print("Ошибка при декодировании продукта: \(error.localizedDescription)")
@@ -83,40 +106,62 @@ class DataManager: ObservableObject {
         }
     }
   
-    func addProduct(item: Product) {
-        let db = Firestore.firestore()
-
+    func addProduct(_ product: Product, completion: @escaping (Result<Product, Error>) -> Void) {
+        let docRef = db.collection("products").document()
+        var newProduct = product
+        newProduct.id = docRef.documentID
         do {
-            let encoder = Firestore.Encoder()
-            let data = try encoder.encode(item)
-            var ref: DocumentReference? = nil
-            ref = db.collection("items").addDocument(data: data) { err in
-                if let err = err {
-                    print("Ошибка при добавлении продукта: \(err.localizedDescription)")
+            try docRef.setData(from: newProduct) { [weak self] error in
+                if let error = error {
+                    completion(.failure(error))
                 } else {
-                    print("Продукт успешно добавлен с ID: \(ref!.documentID)")
+                    DispatchQueue.main.async {
+                        self?.products.append(newProduct)
+                    }
+                    completion(.success(newProduct))
                 }
             }
-        } catch {
-            print("Ошибка при кодировании продукта: \(error.localizedDescription)")
+        } catch let error {
+            completion(.failure(error))
         }
     }
      
-    func fetchManufacturies() {
-        manufacturies.removeAll()
-        let db = Firestore.firestore()
-        let ref = db.collection("manufacturies")
-        ref.getDocuments { snapshot, error in
+    func fetchManufacturers(completion: @escaping (Result<[Manufacturer], Error>) -> Void) {
+        db.collection("manufacturers").getDocuments { [weak self] (querySnapshot, error) in
+            if let error = error {
+                print("Ошибка при получении производителей: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            let manufacturers = querySnapshot?.documents.compactMap { document in
+                try? document.data(as: Manufacturer.self)
+            } ?? []
+            DispatchQueue.main.async {
+                self?.manufacturers = manufacturers
+            }
+            completion(.success(manufacturers))
+        }
+    }
+    
+    func fetchManufacturersAdmin() {
+        let manufacturersRef = db.collection("manufacturers")
+        manufacturersRef.getDocuments { [weak self] snapshot, error in
             if let error = error {
                 print("Ошибка при получении производителей: \(error.localizedDescription)")
                 return
             }
-
-            if let snapshot = snapshot {
-                self.manufacturies = snapshot.documents.compactMap { document in
+            
+            guard let documents = snapshot?.documents else {
+                print("Нет данных производителей")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self?.manufacturers = documents.compactMap { document in
                     do {
-                        let manufacture = try document.data(as: Manufacture.self)
-                        return manufacture
+                        var manufacturer = try document.data(as: Manufacturer.self)
+                        manufacturer.id = document.documentID
+                        return manufacturer
                     } catch {
                         print("Ошибка при декодировании производителя: \(error.localizedDescription)")
                         return nil
@@ -126,27 +171,66 @@ class DataManager: ObservableObject {
         }
     }
     
-    func fetchProductLines() {
-        productLines.removeAll()
-        let db = Firestore.firestore()
-        let ref = db.collection("productLines")
-        ref.getDocuments { snapshot, error in
-            if let error = error {
-                print("Ошибка при получении продуктовых линеек: \(error.localizedDescription)")
-                return
-            }
-
-            if let snapshot = snapshot {
-                self.productLines = snapshot.documents.compactMap { document in
-                    do {
-                        let productLine = try document.data(as: ProductLine.self)
-                        return productLine
-                    } catch {
-                        print("Ошибка при декодировании продуктовой линейки: \(error.localizedDescription)")
-                        return nil
+    func addManufacturer(_ manufacturer: Manufacturer, completion: @escaping (Result<Manufacturer, Error>) -> Void) {
+        let docRef = db.collection("manufacturers").document()
+        var newManufacturer = manufacturer
+        newManufacturer.id = docRef.documentID
+        do {
+            try docRef.setData(from: newManufacturer) { [weak self] error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    DispatchQueue.main.async {
+                        self?.manufacturers.append(newManufacturer)
                     }
+                    completion(.success(newManufacturer))
                 }
             }
+        } catch let error {
+            completion(.failure(error))
+        }
+    }
+    
+    func fetchProductLines(completion: @escaping (Result<[ProductLine], Error>) -> Void) {
+        db.collectionGroup("productLines").getDocuments { [weak self] (querySnapshot, error) in
+            if let error = error {
+                print("Ошибка при получении продуктовых линеек: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            let productLines = querySnapshot?.documents.compactMap { document in
+                try? document.data(as: ProductLine.self)
+            } ?? []
+            DispatchQueue.main.async {
+                self?.productLines = productLines
+            }
+            completion(.success(productLines))
+        }
+    }
+    
+    func addProductLine(_ productLine: ProductLine, to manufacturer: Manufacturer, completion: @escaping (Result<ProductLine, Error>) -> Void) {
+        guard let manufacturerID = manufacturer.id else {
+            completion(.failure(NSError(domain: "Invalid manufacturer ID", code: 0, userInfo: nil)))
+            return
+        }
+        
+        let docRef = db.collection("manufacturers").document(manufacturerID).collection("productLines").document()
+        var newProductLine = productLine
+        newProductLine.id = docRef.documentID
+        newProductLine.manufacturerId = manufacturerID
+        do {
+            try docRef.setData(from: newProductLine) { [weak self] error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    DispatchQueue.main.async {
+                        self?.productLines.append(newProductLine)
+                    }
+                    completion(.success(newProductLine))
+                }
+            }
+        } catch let error {
+            completion(.failure(error))
         }
     }
     
@@ -186,12 +270,15 @@ class DataManager: ObservableObject {
         let db = Firestore.firestore()
         let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
 
+        guard let thumbnailImage = product.thumbnailImage else {
+            return
+        }
         let favoriteProduct = FavoriteProduct(
             productId: productId,
             title: product.title,
-            manufactureName: product.manufactureName,
-            productLineName: product.productLineName,
-            thumbnailImage: product.thumbnailImage
+            manufacturer: product.manufacturer,
+            productLine: product.productLine,
+            thumbnailImage: thumbnailImage
         )
 
         favoritesRef.document(productId).getDocument { document, error in
@@ -253,8 +340,7 @@ class DataManager: ObservableObject {
             if let snapshot = snapshot {
                 let favoriteProducts = snapshot.documents.compactMap { document -> FavoriteProduct? in
                     do {
-                        var favoriteProduct = try document.data(as: FavoriteProduct.self)
-                        favoriteProduct.id = document.documentID
+                        let favoriteProduct = try document.data(as: FavoriteProduct.self)
                         return favoriteProduct
                     } catch {
                         print("Ошибка при декодировании избранного продукта: \(error.localizedDescription)")

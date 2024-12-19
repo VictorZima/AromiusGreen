@@ -64,52 +64,98 @@ class AuthManager: ObservableObject {
                     isAdmin: isAdmin
                 )
             } else {
-                print("Error fetching user data: \(error?.localizedDescription ?? "No error description")")
+                print("Error fetching user data: \(error?.localizedDescription ?? "No error productDescription")")
                 self.currentUser = nil
             }
         }
     }
     
-    func saveProfile(firstName: String?, secondName: String?, country: String?, city: String?, photo: String?) {
-        guard let currentUser = Auth.auth().currentUser else {
-            print("Пользователь не аутентифицирован.")
-            return
-        }
-        
-        let userId = currentUser.uid
-        let db = Firestore.firestore()
-        let userRef = db.collection("users").document(userId)
-        
-        var updatedData: [String: Any] = [:]
-        if let firstName = firstName, !firstName.isEmpty {
-            updatedData["firstName"] = firstName
-        }
-        if let secondName = secondName, !secondName.isEmpty {
-            updatedData["secondName"] = secondName
-        }
-        if let country = country, !country.isEmpty {
-            updatedData["country"] = country
-        }
-        if let city = city, !city.isEmpty {
-            updatedData["city"] = city
-        }
-        if let photo = photo {
-            updatedData["photo"] = photo
-        }
-        
-        userRef.updateData(updatedData) { error in
-            if let error = error {
-                print("Ошибка при обновлении профиля: \(error.localizedDescription)")
-            } else {
-                print("Профиль успешно обновлен")
-                // Обновляем локальную копию данных пользователя
-                self.currentUser?.firstName = firstName ?? self.currentUser?.firstName ?? ""
-                self.currentUser?.secondName = secondName ?? self.currentUser?.secondName ?? ""
-                self.currentUser?.country = country ?? self.currentUser?.country ?? ""
-                self.currentUser?.city = city ?? self.currentUser?.city ?? ""
-                self.currentUser?.photo = photo ?? self.currentUser?.photo
-            }
-        }
-    }
+    func saveProfile(firstName: String?, secondName: String?, country: String?, city: String?) {
+          guard let currentUser = Auth.auth().currentUser else {
+              print("Пользователь не аутентифицирован.")
+              return
+          }
+          
+          let userId = currentUser.uid
+          let db = Firestore.firestore()
+          let userRef = db.collection("users").document(userId)
+          
+          var updatedData: [String: Any] = [:]
+          if let firstName = firstName {
+              updatedData["firstName"] = firstName
+          }
+          if let secondName = secondName {
+              updatedData["secondName"] = secondName
+          }
+          if let country = country {
+              updatedData["country"] = country
+          }
+          if let city = city {
+              updatedData["city"] = city
+          }
+//          if let photo = photo {
+//              updatedData["photo"] = photo
+//          }
+          
+          userRef.updateData(updatedData) { error in
+              if let error = error {
+                  print("Ошибка при обновлении профиля: \(error.localizedDescription)")
+//                  DispatchQueue.main.async {
+////                      self.errorMessage = error.localizedDescription
+////                      self.showingError = true
+//                  }
+              } else {
+                  print("Профиль успешно обновлен")
+                  DispatchQueue.main.async {
+                      self.currentUser?.firstName = firstName
+                      self.currentUser?.secondName = secondName
+                      self.currentUser?.country = country
+                      self.currentUser?.city = city
+//                      self.currentUser?.photo = photo
+                  }
+              }
+          }
+      }
+    
+//    func saveProfile(firstName: String?, secondName: String?, country: String?, city: String?) {
+//        guard let currentUser = Auth.auth().currentUser else {
+//            print("Пользователь не аутентифицирован.")
+//            return
+//        }
+//        
+//        let userId = currentUser.uid
+//        let db = Firestore.firestore()
+//        let userRef = db.collection("users").document(userId)
+//        
+//        var updatedData: [String: Any] = [:]
+//        if let firstName = firstName, !firstName.isEmpty {
+//            updatedData["firstName"] = firstName
+//        }
+//        if let secondName = secondName, !secondName.isEmpty {
+//            updatedData["secondName"] = secondName
+//        }
+//        if let country = country, !country.isEmpty {
+//            updatedData["country"] = country
+//        }
+//        if let city = city, !city.isEmpty {
+//            updatedData["city"] = city
+//        }
+////        if let photo = photo {
+////            updatedData["photo"] = photo
+////        }
+//        
+//        userRef.updateData(updatedData) { error in
+//            if let error = error {
+//                print("Ошибка при обновлении профиля: \(error.localizedDescription)")
+//            } else {
+//                print("Профиль успешно обновлен")
+//                self.currentUser?.firstName = firstName ?? self.currentUser?.firstName ?? ""
+//                self.currentUser?.secondName = secondName ?? self.currentUser?.secondName ?? ""
+//                self.currentUser?.country = country ?? self.currentUser?.country ?? ""
+//                self.currentUser?.city = city ?? self.currentUser?.city ?? ""
+////                self.currentUser?.photo = photo ?? self.currentUser?.photo
+//            }
+//        }
+//    }
     
 }

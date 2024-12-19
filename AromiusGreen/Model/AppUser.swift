@@ -8,26 +8,24 @@
 import FirebaseFirestoreSwift
 
 struct AppUser: Identifiable, Codable {
-    @DocumentID var id: String?
-    var firstName: String
-    var secondName: String
-    var country: String
-    var city: String
+    var id: String
+    var firstName: String?
+    var secondName: String?
+    var country: String?
+    var city: String?
     var email: String
     var photo: String?
     var isAdmin: Bool = false
     
     var fullName: String {
-        return "\(firstName) \(secondName)"
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case firstName
-        case secondName
-        case country
-        case city
-        case email
-        case photo
-        case isAdmin
+        let firstName = self.firstName ?? ""
+        let secondName = self.secondName ?? ""
+        if firstName.isEmpty {
+                return secondName
+            } else if secondName.isEmpty {
+                return firstName
+            } else {
+                return "\(firstName) \(secondName)"
+            }
     }
 }

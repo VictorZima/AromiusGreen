@@ -1,5 +1,5 @@
 //
-//  ProductLine.swift
+//  Manufacturer.swift
 //  AromiusGreen
 //
 //  Created by VictorZima on 11/09/2024.
@@ -7,11 +7,12 @@
 
 import FirebaseFirestoreSwift
 
-struct ProductLine: Identifiable, Codable {
+struct Manufacturer: Identifiable, Codable {
     @DocumentID var id: String?
     var title: String
-    var lineDescription: String?
+    var manufacturerDescription: String?
     var logo: String?
+//    var productLines: [ProductLine]?
     var isShow: Bool
-    var manufacturerId: String
 }
+

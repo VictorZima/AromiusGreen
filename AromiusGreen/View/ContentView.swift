@@ -12,6 +12,8 @@ struct ContentView: View {
     @EnvironmentObject var dataManager: DataManager
     @EnvironmentObject var cartManager: CartManager
     
+    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    
     var body: some View {
         TabView {
             Home()
@@ -20,12 +22,14 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                 }
+
             FavoritesView()
                 .tabItem {
                     VStack {
                         Image(systemName: "suit.heart.fill")
                     }
                 }
+                .environmentObject(favoritesViewModel)
             InfoView()
                 .tabItem {
                     VStack {
@@ -47,6 +51,11 @@ struct ContentView: View {
                 .badge(authManager.isUserAuthenticated && cartManager.cartItems.count > 0 ? "\(cartManager.cartItems.count)" : nil)
         }
         .tint(.darkBlueItem)
+        .onAppear {
+            favoritesViewModel.dataManager = dataManager
+            favoritesViewModel.authManager = authManager
+            favoritesViewModel.fetchFavorites()
+        }
     }
 }
 

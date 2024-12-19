@@ -91,11 +91,9 @@ struct CartView: View {
 //                                        .font(.headline)
 //                                }
                                 
-                                CustomButton(title: "Оформить заказ", widthSize: .large, destination: {
-                                    
-                                    AnyView(DeliveryMethodView())
-                                }
-                                )
+                                CustomNavigationButton(title: "Оформить заказ", widthSize: .large, destination: DeliveryMethodView())
+                                
+                                
                                     .padding(.horizontal)
                                     .padding(.bottom, 6)
                             }

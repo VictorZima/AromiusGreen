@@ -10,6 +10,7 @@ import Firebase
 
 class CartManager: ObservableObject {
     @Published var cartItems: [CartItem] = []
+    @Published var errorMessage: String? = nil
     
     init() {
         loadCartFromDatabase()
@@ -34,7 +35,6 @@ class CartManager: ObservableObject {
             
             let updatedItem = cartItems[index]
             
-            // Безопасно разворачиваем updatedItem.id
             if let itemId = updatedItem.id {
                 cartRef.document(itemId).updateData([
                     "quantity": updatedItem.quantity
@@ -49,12 +49,17 @@ class CartManager: ObservableObject {
                 print("Ошибка: отсутствует идентификатор элемента корзины.")
             }
         } else {
+            guard let thumbnailImage = product.thumbnailImage else {
+                print("Ошибка: некоторые свойства продукта отсутствуют.")
+                return
+            }
+            
             let newItem = CartItem(
                 productId: productId,
                 title: product.title,
                 price: product.price,
                 quantity: quantity,
-                thumbnailImage: product.thumbnailImage
+                thumbnailImage: thumbnailImage
             )
             
             var ref: DocumentReference? = nil
@@ -70,7 +75,6 @@ class CartManager: ObservableObject {
                 } else {
                     print("Товар успешно добавлен в корзину")
                     
-                    // Присваиваем новый id элементу
                     if let documentId = ref?.documentID {
                         var newItemWithID = newItem
                         newItemWithID.id = documentId
@@ -93,14 +97,11 @@ class CartManager: ObservableObject {
         let cartRef = db.collection("users").document(userId).collection("carts")
         
         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
-            // Увеличиваем количество
             cartItems[index].quantity += 1
             
             let updatedItem = cartItems[index]
             
-            // Проверяем, что updatedItem.id не равен nil
             if let itemId = updatedItem.id {
-                // Обновляем количество в Firestore
                 cartRef.document(itemId).updateData([
                     "quantity": updatedItem.quantity
                 ]) { error in
@@ -175,7 +176,6 @@ class CartManager: ObservableObject {
         
         if let index = cartItems.firstIndex(where: { $0.productId == productId }) {
             if let itemId = cartItems[index].id {
-                // Сначала пытаемся удалить из базы данных
                 cartRef.document(itemId).delete { [weak self] error in
                     if let error = error {
                         print("Ошибка при удалении товара из корзины: \(error.localizedDescription)")
@@ -197,11 +197,12 @@ class CartManager: ObservableObject {
         return cartItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 
-
     func loadCartFromDatabase() {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не может быть загружена.")
+            DispatchQueue.main.async {
+                self.errorMessage = "Пользователь не авторизован, корзина не может быть загружена."
+            }
             return
         }
         
@@ -209,32 +210,65 @@ class CartManager: ObservableObject {
         
         cartRef.getDocuments { snapshot, error in
             if let error = error {
-                print("Ошибка при загрузке корзины: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.errorMessage = "Ошибка при загрузке корзины: \(error.localizedDescription)"
+                }
                 return
             }
             
-            if let snapshot = snapshot {
-                self.cartItems = snapshot.documents.compactMap { document -> CartItem? in
-                    let data = document.data()
-                    
-                    guard let productId = data["productId"] as? String,
-                          let title = data["title"] as? String,
-                          let price = data["price"] as? Double,
-                          let quantity = data["quantity"] as? Int,
-                          let thumbnailImage = data["thumbnailImage"] as? String else { return nil }
-                    
-                    return CartItem(
-                        id: document.documentID,
-                        productId: productId,
-                        title: title,
-                        price: price,
-                        quantity: quantity,
-                        thumbnailImage: thumbnailImage
-                    )
+            guard let snapshot = snapshot else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Нет данных в корзине."
+                    self.cartItems = []
+                }
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.cartItems = snapshot.documents.compactMap { document in
+                    try? document.data(as: CartItem.self)
                 }
             }
         }
     }
+    
+//    func loadCartFromDatabase() {
+//        let db = Firestore.firestore()
+//        guard let userId = Auth.auth().currentUser?.uid else {
+//            print("Пользователь не авторизован, корзина не может быть загружена.")
+//            return
+//        }
+//        
+//        let cartRef = db.collection("users").document(userId).collection("carts")
+//        
+//        cartRef.getDocuments { snapshot, error in
+//            if let error = error {
+//                print("Ошибка при загрузке корзины: \(error.localizedDescription)")
+//                return
+//            }
+//            
+//            if let snapshot = snapshot {
+//                self.cartItems = snapshot.documents.compactMap { document -> CartItem? in
+//                    let data = document.data()
+//                    
+//                    guard let productId = data["productId"] as? String,
+//                          let title = data["title"] as? String,
+//                          let price = data["price"] as? Double,
+//                          let quantity = data["quantity"] as? Int,
+//                          let thumbnailImage = data["thumbnailImage"] as? String else { return nil }
+//                    
+//                    return CartItem(
+//                        id: document.documentID,
+//                        productId: productId,
+//                        title: title,
+//                        price: price,
+//                        quantity: quantity,
+//                        thumbnailImage: thumbnailImage
+//                    )
+//                }
+//            }
+//        }
+//    }
     
     func clearCart() {
         let db = Firestore.firestore()

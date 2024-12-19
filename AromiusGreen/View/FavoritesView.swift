@@ -6,29 +6,21 @@
 //
 
 import SwiftUI
+import FirebaseStorage
 
 struct FavoritesView: View {
+    @EnvironmentObject var viewModel: FavoritesViewModel
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var dataManager: DataManager
-    @State private var isShowingAuthView = false
-    @State private var favoriteProducts: [FavoriteProduct] = []
-    let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
+    
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
     
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
-                HStack {
-                    Text("Favorites")
-                        .foregroundColor(.darkBlueItem)
-                        .font(.system(size: 20, weight: .bold))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Spacer()
-                }
-                .padding(16)
+                headerView()
                 
                 if authManager.isUserAuthenticated {
-                    if favoriteProducts.isEmpty {
+                    if viewModel.favoriteProducts.isEmpty {
                         VStack {
                             Text("You have no favorite products yet.")
                                 .font(.title2)
@@ -38,65 +30,74 @@ struct FavoritesView: View {
                     } else {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 3) {
-                                ForEach(favoriteProducts, id: \.id) { product in
-//                                    ProductCell(product: product)
+                                ForEach(viewModel.favoriteProducts, id: \.id) { product in
                                     ProductCell(product: product, onRemove: { removedProduct in
-                                        // Удаление товара из списка при удалении из избранного
-                                        favoriteProducts.removeAll { $0.id == removedProduct.id }
+                                        viewModel.favoriteProducts.removeAll { $0.id == removedProduct.id }
                                     })
                                 }
                             }
                         }
                     }
                 } else {
-                    VStack(spacing: 20) {
-                        Text("Save your favorite products to favorites!")
-                            .font(.title)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                        
-                        Text("Create an account or log in to save products to your favorites and easily find them later.")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                        
-                        Button {
-                            isShowingAuthView = true
-                        } label: {
-                            Text("Sign in or Register")
-                                .foregroundColor(.green)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 17)
-                                        .stroke(Color.green, lineWidth: 2)
-                                )
-                        }
-                        .padding(.horizontal, 40)
-                    }
-                    .padding()
+                    showAuthenticationPrompt()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .onAppear {
-            if authManager.isUserAuthenticated {
-                dataManager.fetchFavorites { products in
-                    favoriteProducts = products
-                }
-            }
+            viewModel.fetchFavorites()
         }
-        .sheet(isPresented: $isShowingAuthView) {
-            AuthView(isShowingAuthView: $isShowingAuthView)
+        .sheet(isPresented: $viewModel.isShowingAuthView) {
+            AuthView(isShowingAuthView: $viewModel.isShowingAuthView)
                 .environmentObject(authManager)
         }
     }
+    
+    private func headerView() -> some View {
+        HStack {
+            Text("Favorites")
+                .foregroundColor(.darkBlueItem)
+                .font(.system(size: 20, weight: .bold))
+            Spacer()
+        }
+        .padding(16)
+    }
+    
+    private func showAuthenticationPrompt() -> some View {
+            VStack(spacing: 20) {
+                Text("Save your favorite products to favorites!")
+                    .font(.title)
+                    .multilineTextAlignment(.center)
+                    .padding()
+
+                Text("Create an account or log in to save products to your favorites and easily find them later.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .padding()
+
+                Button {
+                    viewModel.isShowingAuthView = true
+                } label: {
+                    Text("Sign in or Register")
+                        .foregroundColor(.green)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 17)
+                                .stroke(Color.green, lineWidth: 2)
+                        )
+                }
+                .padding(.horizontal, 40)
+            }
+            .padding()
+        }
 }
 
 struct ProductCell: View {
     @State private var loadedImage: Image?
+    
     var product: FavoriteProduct
-    let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
+    let storageRef = Storage.storage().reference(withPath: "items_images/thumbnails/")
     let onRemove: (FavoriteProduct) -> Void
     
     var body: some View {
@@ -105,10 +106,9 @@ struct ProductCell: View {
                               onRemove(product)
                           })
             } label: {
-                VStack(alignment: .leading) {
-                    let imagePath = "items_images%2Fthumbnails%2F" + product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-                    let imageUrl = baseUrl + imagePath + "?alt=media"
-                    
+                VStack(alignment: .leading) {                    
+                    let imagePath = product.thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
+                    let imageRef = storageRef.child(imagePath)
                     if let loadedImage = loadedImage {
                         loadedImage
                             .resizable()
@@ -123,8 +123,16 @@ struct ProductCell: View {
                             .opacity(0.8)
                             .frame(maxWidth: .infinity)
                             .onAppear {
-                                Task {
-                                    loadedImage = await ImageLoader.loadImage(from: URL(string: imageUrl)!)
+                                imageRef.downloadURL { url, error in
+                                    if let error = error {
+                                        print("Ошибка загрузки изображения: \(error.localizedDescription)")
+                                        return
+                                    }
+                                    if let url = url {
+                                        Task {
+                                            loadedImage = await ImageLoader.loadImage(from: url)
+                                        }
+                                    }
                                 }
                             }
                     }
@@ -137,13 +145,17 @@ struct ProductCell: View {
                             .multilineTextAlignment(.leading)
                             .frame(minHeight: 40, alignment: .topLeading)
                         
-                        Text("\(product.manufactureName)")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.gray)
+                        if let manufacturer = product.manufacturer {
+                            Text("\(manufacturer.title)")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color.gray)
+                        }
                         
-                        Text("\(product.productLineName)")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.gray)
+                        if let productLine = product.productLine {
+                            Text("\(productLine.title)")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.gray)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 15)
@@ -151,10 +163,11 @@ struct ProductCell: View {
                 .frame(maxWidth: .infinity)
             }
     }
+    
 }
 
-#Preview {
-    FavoritesView()
-        .environmentObject(AuthManager())
-        .environmentObject(DataManager())
-}
+//#Preview {
+//    FavoritesView()
+//        .environmentObject(AuthManager())
+//        .environmentObject(DataManager())
+//}

@@ -17,7 +17,7 @@ enum OrderStatus: Int, CaseIterable {
     var title: String {
         switch self {
         case .placed:
-            return "order_statugit s_placed"
+            return "order_status_placed"
         case .paid:
             return "Processing"
         case .processing:

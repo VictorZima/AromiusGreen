@@ -17,7 +17,7 @@ struct AromiusGreen_App: App {
     @StateObject var cartManager = CartManager()
     
     var body: some Scene {
-        WindowGroup {
+        WindowGroup {           
             ContentView()
                 .environmentObject(dataManager)
                 .environmentObject(authManager)

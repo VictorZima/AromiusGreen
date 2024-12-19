@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import FirebaseStorage
 
 struct OrdersView: View {
     @EnvironmentObject var dataManager: DataManager
@@ -47,6 +46,9 @@ struct OrderRow: View {
     
     var body: some View {
         VStack(alignment: .leading) {
+//            OrderProgressView(currentStatus: order.status)
+            
+            
             StatusProgressView(statuses: ["Placed", "Processing", "In Transit", "Awaiting Pickup", "Received"], currentStatus: order.status, statusHistory: order.statusHistory)
             
             Text("Items in this order:")

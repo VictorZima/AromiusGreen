@@ -30,19 +30,7 @@ struct Order: Identifiable, Codable {
         self.deliveryMethod = deliveryMethod
         self.deliveryCost = deliveryCost
         self.deliveryAddress = deliveryAddress
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case userId
-        case items
-        case totalAmount
-        case status
-        case createdAt
-        case deliveryMethod
-        case deliveryCost
-        case deliveryAddress
-        case updatedAt
-        case statusHistory
+        self.statusHistory = [OrderStatusHistory(status: "Placed")]
     }
 }
 

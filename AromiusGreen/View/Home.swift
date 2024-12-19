@@ -6,49 +6,21 @@
 //
 
 import SwiftUI
+import FirebaseStorage
 
 struct Home: View {
     @EnvironmentObject var dataManager: DataManager
-    @State private var selectedCategory: String? = nil
+    @StateObject private var viewModel = HomeViewModel(dataManager: DataManager())
+    
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
-    
-    var filteredProducts: [Product] {
-        if selectedCategory == "All" || selectedCategory == nil {
-            return dataManager.products
-        } else if let selectedCategory = selectedCategory {
-            return dataManager.products.filter { $0.categoryIds.contains(selectedCategory) }
-        } else {
-            return []
-        }
-    }
-    
+   
     var body: some View {
         NavigationView {
-            VStack {
-                HStack {
-                    Text("Dead Sea Cosmetics\nfrom")
-                        .font(.system(size: 18))
-                    + Text(" AROMIUS")
-                        .foregroundColor(.darkBlueItem)
-                        .font(.system(size: 20, weight: .bold))
-                    + Text(" shop")
-                        .font(.system(size: 18))
-                    Spacer()
-                }
-                .padding(16)
-                
-                ScrollView {
-                    VStack {
-                        CategoryListView
-                            .padding(.bottom)
-                        
-                        LazyVGrid(columns: columns, spacing: 3) {
-                            ForEach(filteredProducts, id: \.id) { item in
-                                ProductCard(product: item)
-                            }
-                        }
-                    }
-                }
+            if dataManager.isDataLoaded {
+                contentView
+            } else {
+                ProgressView("...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -56,9 +28,9 @@ struct Home: View {
     var CategoryListView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
-                ForEach(dataManager.categories) { category in
+                ForEach(viewModel.categories) { category in
                     Button {
-                        selectedCategory = category.id
+                        viewModel.selectedCategory = category.id
                     } label: {
                         HStack {
                             if !category.icon.isEmpty {
@@ -68,18 +40,18 @@ struct Home: View {
                                     .scaledToFit()
                                     .frame(width: 40, height: 40)
                             }
-                            if selectedCategory == category.id || category.id == "All" {
+                            if viewModel.selectedCategory == category.id || category.id == "All" {
                                 Text(category.title)
                             }
                         }
                         .frame(minWidth: 40, minHeight: 60)
-                        .foregroundStyle(selectedCategory == category.id ? .white : .darkBlueItem)
+                        .foregroundStyle(viewModel.selectedCategory == category.id ? .white : .darkBlueItem)
                         .padding(.horizontal, 10)
-                        .background(selectedCategory == category.id ? .black : .gray.opacity(0.1))
+                        .background(viewModel.selectedCategory == category.id ? .black : .gray.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 15))
                         .onTapGesture {
                             withAnimation {
-                                selectedCategory = category.id
+                                viewModel.selectedCategory = category.id
                             }
                         }
                     }
@@ -87,29 +59,61 @@ struct Home: View {
             }
             .padding(.leading, 15)
             .onAppear {
-                if selectedCategory == nil {
-                    selectedCategory = "All"
+                if viewModel.selectedCategory == nil {
+                    viewModel.selectedCategory = "All"
                 }
             }
         }
+    }
+    
+    private var contentView: some View {
+        VStack {
+            headerView()
+            
+            ScrollView {
+                VStack {
+                    CategoryListView
+                        .padding(.bottom)
+                    
+                    LazyVGrid(columns: columns, spacing: 3) {
+                        ForEach(viewModel.filteredProducts, id: \.id) { item in
+                            ProductCard(product: item)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func headerView() -> some View {
+        HStack {
+            Text("Dead Sea Cosmetics\nfrom")
+                .font(.system(size: 18))
+            + Text(" AROMIUS")
+                .foregroundColor(.darkBlueItem)
+                .font(.system(size: 20, weight: .bold))
+            + Text(" shop")
+                .font(.system(size: 18))
+            Spacer()
+        }
+        .padding(16)
     }
 }
 
 struct ProductCard: View {
     @State private var loadedImage: Image?
+    
     var product: Product
-    let baseUrl = "https://firebasestorage.googleapis.com/v0/b/aromius-ed523.appspot.com/o/"
+    let storageRef = Storage.storage().reference(withPath: "items_images/thumbnails/")
     
     var body: some View {
         NavigationLink {
             ProductView(passedProduct: product)
         } label: {
             VStack(alignment: .leading) {
-                
-                let thumbnailImage = product.thumbnailImage
-                
-                if let encodedThumbnail = thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-                   let url = URL(string: baseUrl + "items_images%2Fthumbnails%2F" + encodedThumbnail + "?alt=media") {
+                if let thumbnailImage = product.thumbnailImage {
+                    let imagePath =  thumbnailImage.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
+                    let imageRef = storageRef.child(imagePath)
                     
                     if let loadedImage = loadedImage {
                         loadedImage
@@ -125,28 +129,18 @@ struct ProductCard: View {
                             .opacity(0.8)
                             .frame(maxWidth: .infinity)
                             .onAppear {
-                                Task {
-                                    loadedImage = await ImageLoader.loadImage(from: url)
-                                }
+                                loadImage(imageRef: imageRef)
                             }
                     }
                 }
-                
+
                 VStack(alignment: .leading) {
-                    
                     Text("\(product.title)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Color.black)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .frame(minHeight: 40, alignment: .topLeading)
-                    
-                    Text("\(product.manufactureName)")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.gray)
-                    Text(product.productLineName)
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.gray)
                     
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
                         Text("₪")
@@ -156,6 +150,18 @@ struct ProductCard: View {
                             .foregroundColor(Color.black)
                     }
                     .padding(.top, 10)
+                    
+                    if let manufacturer = product.manufacturer {
+                        Text("\(manufacturer.title)")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.gray)
+                    }
+                    
+                    if let productLine = product.productLine {
+                        Text("\(productLine.title)")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.gray)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 15)
@@ -163,9 +169,26 @@ struct ProductCard: View {
             .frame(maxWidth: .infinity)
         }
     }
+    
+    private func loadImage(imageRef: StorageReference) {
+            imageRef.downloadURL { url, error in
+                if let error = error {
+                    print("Ошибка загрузки изображения: \(error.localizedDescription)")
+                    return
+                }
+                if let url = url {
+                    Task {
+                        let image = await ImageLoader.loadImage(from: url)
+                        DispatchQueue.main.async {
+                            self.loadedImage = image
+                        }
+                    }
+                }
+            }
+        }
 }
 
-#Preview {
-    Home()
-        .environmentObject(DataManager())
-}
+//#Preview {
+//    Home()
+//        .environmentObject(DataManager())
+//}

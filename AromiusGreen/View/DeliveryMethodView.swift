@@ -24,10 +24,8 @@ struct DeliveryMethodView: View {
 
     @State private var isShowingAddAddressView = false
 
-    // Константа для идентификатора метода самовывоза
     let pickupMethodId = "OpDyDur05rUy0mqG16WW"
 
-    // Адрес магазина для самовывоза
     let storeAddress = Address(
         id: nil,
         firstName: "Магазин",
@@ -72,10 +70,8 @@ struct DeliveryMethodView: View {
                 .padding(.vertical, 5)
             }
 
-            // Если выбран метод доставки
             if let method = selectedDeliveryMethod {
                 if method.id == pickupMethodId {
-                    // Самовывоз
                     Text("Вы выбрали самовывоз. Адрес магазина:")
                         .font(.subheadline)
                         .padding(.top, 10)
@@ -83,7 +79,6 @@ struct DeliveryMethodView: View {
                     Text("\(storeAddress.street), \(storeAddress.city), \(storeAddress.zipCode ?? ""), \(storeAddress.country)")
                         .font(.subheadline)
                 } else {
-                    // Доставка
                     Text("Выберите адрес доставки")
                         .font(.headline)
                         .padding(.vertical, 10)
@@ -131,7 +126,7 @@ struct DeliveryMethodView: View {
                             .padding(.vertical, 5)
                         }
 
-                        Button("Добавить новый адрес") {
+                        Button("Add new address") {
                             isShowingAddAddressView = true
                         }
                         .sheet(isPresented: $isShowingAddAddressView, onDismiss: {
@@ -150,7 +145,7 @@ struct DeliveryMethodView: View {
 
             Spacer()
 
-            CustomButton(title: "Оформить заказ", widthSize: .large, action: {
+            CustomActionButton(title: "Оформить заказ", widthSize: .large, action: {
                 placeOrder()
             })
             .disabled(!isOrderReady)
@@ -158,7 +153,7 @@ struct DeliveryMethodView: View {
         .padding()
         .onChange(of: selectedDeliveryMethod) { newMethod in
             if let method = newMethod {
-                deliveryCost = method.cost // Обновляем стоимость доставки при выборе метода
+                deliveryCost = method.cost
             }
         }
         .onAppear {
@@ -197,10 +192,8 @@ struct DeliveryMethodView: View {
         var deliveryAddress: Address
 
         if method.id == pickupMethodId {
-            // Используем адрес магазина
             deliveryAddress = storeAddress
         } else {
-            // Используем выбранный адрес пользователя
             guard let address = selectedAddress else { return }
             deliveryAddress = address
         }

@@ -2,294 +2,119 @@
 //  AddProductView.swift
 //  AromiusGreen
 //
-//  Created by VictorZima on 10/09/2024.
+//  Created by VictorZima on 16/11/2024.
 //
 
 import SwiftUI
-import PhotosUI
-import FirebaseFirestore
-import FirebaseStorage
 
 struct AddProductView: View {
-    @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dataManager: DataManager
-    @State private var checkboxStates: [String: Bool] = [:]
-    @State private var title = ""
-    @State private var barcode = ""
-    @State private var selectedManufactureId: String? = nil
-    @State private var selectedProductLineId: String? = nil
-    @State private var image = ""
-    @State private var price: Double = 0.0
-    @State private var purchasePrice: Double = 0.0
-    @State private var value = ""
-    @State private var description = ""
-    @State private var selectedCategories: [String] = []
-    
-    @State private var itemImage: UIImage?
-    @State private var photosPickerItem: PhotosPickerItem?
-    
-    @State private var isSaving = false
-    @State private var showingImageEditor = false
+    @StateObject private var viewModel: AddProductViewModel
+
+    init() {
+        _viewModel = StateObject(wrappedValue: AddProductViewModel())
+    }
     
     var body: some View {
-        if authManager.currentUser?.isAdmin == true {
+        AdminView {
             Form {
-                PhotosPicker(selection: $photosPickerItem, matching: .images) {
-                    Image(uiImage: itemImage ?? UIImage(resource: .defaultItemPhoto))
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 200, height: 200)
-                        .clipShape(.rect)
-                        .cornerRadius(10)
-                        .frame(maxWidth: .infinity)
-                }
-                .onChange(of: photosPickerItem) { newItem in
-                    if let newItem = newItem {
-                        Task {
-                            if let data = try? await newItem.loadTransferable(type: Data.self),
-                               let image = UIImage(data: data) {
-                                itemImage = image
-                            }
-                        }
-                    }
-                }
-                //            .onChange(of: photosPickerItem) { _, _ in
-                //                Task {
-                //                    if let photosPickerItem,
-                //                       let data = try? await photosPickerItem.loadTransferable(type: Data.self) {
-                //                        if let image = UIImage(data: data) {
-                //                            itemImage = image
-                //                            showingImageEditor = true
-                //                        }
-                //                    }
-                //                    photosPickerItem = nil
-                //                }
-                //            }
-                
-                //            .onChange(of: photosPickerItem) { newItem in // Обработчик изменений для photosPickerItem
-                //                       if let newItem = newItem {
-                //                           Task {
-                //                               if let data = try? await newItem.loadTransferable(type: Data.self),
-                //                                  let image = UIImage(data: data) {
-                //                                   itemImage = image
-                //                               }
-                //                           }
-                //                       }
-                //                   }
-                
-                .sheet(isPresented: $showingImageEditor) {
-                    ImageEditorView(image: $itemImage)
+                Section(header: Text("Basic Information")) {
+                    TextField("Title", text: $viewModel.title)
+                        .autocapitalization(.words)
+                    
+                    TextField("Barcode", text: $viewModel.barcode)
+                        .keyboardType(.numberPad)
+                    
+                    TextField("Description", text: Binding(
+                        get: { viewModel.productDescription ?? "" },
+                        set: { viewModel.productDescription = $0.isEmpty ? nil : $0 }
+                    ))
                 }
                 
-                if itemImage != nil {
-                    Button("Edit Image") {
-                        showingImageEditor = true
-                    }
-                    .padding()
-                }
-                
-                TextField("Title", text: $title)
-                HStack {
-                    TextField("Barcode", text: $barcode)
-                    Text("*")
-                        .foregroundStyle(.red)
-                        .font(.title3)
-                }
-                
-                Picker("Manufacture", selection: $selectedManufactureId) {
-                    ForEach(dataManager.manufacturies, id: \.id) { manufacture in
-                        Text(manufacture.title).tag(manufacture.id)
-                    }
-                }
-                Picker("ProductLine", selection: $selectedProductLineId) {
-                    ForEach(dataManager.productLines, id: \.id) { productLine in
-                        Text(productLine.title).tag(productLine.id)
-                    }
-                }
-                
-                TextField("Description", text: $description)
-                TextField("Price", value: $price, format: .number)
+                Section(header: Text("Prices")) {
+                    TextField("Price", text: Binding(
+                        get: { viewModel.priceString },
+                        set: { viewModel.priceString = $0 }
+                    ))
                     .keyboardType(.decimalPad)
-                TextField("Purchase Price", value: $purchasePrice, format: .number)
+                    
+                    TextField("Purchase Price", text: Binding(
+                        get: { viewModel.purchasePriceString },
+                        set: { viewModel.purchasePriceString = $0 }
+                    ))
                     .keyboardType(.decimalPad)
-                TextField("Value (ml)", text: $value)
-                List {
+                }
+                
+                Section(header: Text("Categories")) {
                     ForEach(dataManager.categories, id: \.id) { category in
-                        if let categoryId = category.id {
-                            CheckboxField(id: categoryId, label: category.title) { id, isChecked in
-                                if isChecked {
-                                    selectedCategories.append(id)
+                        MultipleSelectionRow(title: category.title, isSelected: viewModel.selectedCategoryIds.contains(category.id ?? "")) {
+                            if let id = category.id {
+                                if viewModel.selectedCategoryIds.contains(id) {
+                                    viewModel.selectedCategoryIds.removeAll { $0 == id }
                                 } else {
-                                    selectedCategories.removeAll { $0 == id }
+                                    viewModel.selectedCategoryIds.append(id)
                                 }
                             }
-                        } else {
-                            Text("Категория без идентификатора")
                         }
                     }
                 }
                 
-                if isSaving {
-                    ProgressView()
-                } else {
-                    Button {
-                        Task {
-                            isSaving = true
-                            await addProduct()
-                            isSaving = false
+                Section(header: Text("Manufacturer")) {
+                    Picker("Select Manufacturer", selection: Binding(
+                        get: { viewModel.selectedManufacturerId },
+                        set: { newValue in
+                            viewModel.selectedManufacturerId = newValue
+                            if let id = newValue,
+                               let manufacturer = dataManager.manufacturers.first(where: { $0.id == id }) {
+                                viewModel.selectedManufacturerName = manufacturer.title
+                            } else {
+                                viewModel.selectedManufacturerName = nil
+                            }
                         }
-                        
-                    } label: {
-                        Text("Save")
+                    )) {
+                        Text("Select Manufacturer").tag(String?.none)
+                        ForEach(dataManager.manufacturers) { manufacturer in
+                            Text(manufacturer.title).tag(Optional(manufacturer.id))
+                        }
                     }
-                    .disabled(barcode.isEmpty)
                 }
             }
-            .navigationTitle("Add new item")
-            //        }
+            .navigationTitle("Add new product")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        viewModel.saveProduct()
+                    }
+                    .disabled(viewModel.isSaving)
+                }
+            }
+            .alert(isPresented: $viewModel.showAlert) {
+                Alert(title: Text("Result"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
+            }
             .onAppear {
-                if let firstManufactureId = dataManager.manufacturies.first?.id {
-                    selectedManufactureId = firstManufactureId
-                }
-                if let firstProductLineId = dataManager.productLines.first?.id {
-                    selectedProductLineId = firstProductLineId
-                }
+                viewModel.dataManager = dataManager
             }
-            
-            
-        } else {
-            Text("Access Denied")
-                .font(.title)
-                .foregroundColor(.red)
         }
-    }
-    
-    private func uploadPhotos() async -> (String?, String?) {
-        guard let itemImage = itemImage else {
-            return (nil, nil)
-        }
-        
-        let thumbnailSize: CGFloat = 150
-        let imageSize: CGFloat = 300
-        
-        guard let thumbnailImage = resizedImageToSquare(itemImage, size: thumbnailSize),
-              let thumbnailData = thumbnailImage.pngData(),
-              let originalImage = resizedImageToSquare(itemImage, size: imageSize),
-              let originalData = originalImage.pngData() else {
-            return (nil, nil)
-        }
-        //        guard let thumbnailImage = resizedImage(itemImage, width: thumbnailWidth),
-        //              let thumbnailData = thumbnailImage.pngData() else {
-        //            return (nil, nil)
-        //        }
-        //
-        //        guard let originalImage = resizedImage(itemImage, width: imageWidth),
-        //              let originalData = originalImage.pngData() else {
-        //            return (nil, nil)
-        //        }
-        
-        let storageRef = Storage.storage().reference()
-        let thumbnailPath = "items_images/thumbnails/\(UUID().uuidString).png"
-        let originalPath = "items_images/\(UUID().uuidString).png"
-        do {
-            let thumbnailRef = storageRef.child(thumbnailPath)
-            let _ = try await thumbnailRef.putDataAsync(thumbnailData)
-            let thumbnailURL = try await thumbnailRef.downloadURL()
-            
-            let originalRef = storageRef.child(originalPath)
-            let _ = try await originalRef.putDataAsync(originalData)
-            let originalURL = try await originalRef.downloadURL()
-            
-            return (originalURL.lastPathComponent, thumbnailURL.lastPathComponent)
-        } catch {
-            print("Ошибка при загрузке изображений: \(error)")
-            return (nil, nil)
-        }
-    }
-    
-    func resizedImageToSquare(_ image: UIImage, size: CGFloat) -> UIImage? {
-        let newSize = CGSize(width: size, height: size)
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-        return renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: newSize))
-        }
-    }
-    
-    //    func resizedImage(_ image: UIImage, width: CGFloat) -> UIImage? {
-    //        let aspectRatio = image.size.height / image.size.width
-    //        let newHeight = width * aspectRatio
-    //        let newSize = CGSize(width: width, height: newHeight)
-    //        let renderer = UIGraphicsImageRenderer(size: newSize)
-    //        return renderer.image { _ in
-    //            image.draw(in: CGRect(origin: .zero, size: newSize))
-    //        }
-    //    }
-    
-    private func addProduct() async {
-        let (imageUrl, thumbnailUrl) = await uploadPhotos()
-        
-        guard let imageUrl = imageUrl, let thumbnailUrl = thumbnailUrl else {
-            print("Ошибка при загрузке изображений")
-            return
-        }
-        
-        guard let selectedManufactureId = selectedManufactureId else {
-            print("Ошибка: Не выбран производитель")
-            return
-        }
-        
-        guard let selectedProductLineId = selectedProductLineId else {
-            print("Ошибка: Не выбрана линейка продуктов")
-            return
-        }
-        
-        guard let manufacture = dataManager.manufacturies.first(where: { $0.id == selectedManufactureId }) else {
-            print("Ошибка: Производитель не найден")
-            return
-        }
-        
-        guard let productLine = dataManager.productLines.first(where: { $0.id == selectedProductLineId }) else {
-            print("Ошибка: Линейка продуктов не найдена")
-            return
-        }
-        
-        let newItem = Product(
-            title: title,
-            barcode: barcode,
-            descr: description,
-            value: value,
-            categoryIds: selectedCategories,
-            manufactureId: selectedManufactureId,
-            manufactureName: manufacture.title,
-            productLineId: selectedProductLineId,
-            productLineName: productLine.title,
-            image: imageUrl,
-            thumbnailImage: thumbnailUrl,
-            price: price,
-            purchasePrice: purchasePrice
-        )
-        dataManager.addProduct(item: newItem)
     }
 }
 
-struct CheckboxField: View {
-    let id: String
-    let label: String
-    let callback: (String, Bool)->()
-    @State var isChecked: Bool = false
+struct MultipleSelectionRow: View {
+    var title: String
+    var isSelected: Bool
+    var action: () -> Void
     
     var body: some View {
-        HStack {
-            Image(systemName: isChecked ? "checkmark.square" : "square")
-            Text(label)
-        }
-        .onTapGesture {
-            self.isChecked.toggle()
-            self.callback(id, self.isChecked)
+        Button(action: {
+            self.action()
+        }) {
+            HStack {
+                Text(self.title)
+                Spacer()
+                if self.isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.blue)
+                }
+            }
         }
     }
-}
-
-#Preview {
-    AddProductView()
 }

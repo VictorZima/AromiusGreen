@@ -14,12 +14,4 @@ struct CartItem: Identifiable, Codable {
     var price: Double
     var quantity: Int
     var thumbnailImage: String
-
-    enum CodingKeys: String, CodingKey {
-        case productId
-        case title
-        case price
-        case quantity
-        case thumbnailImage
-    }
 }

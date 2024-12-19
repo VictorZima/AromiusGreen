@@ -22,11 +22,4 @@ struct Cart: Identifiable, Codable {
     var totalItems: Int {
         return items.reduce(0) { $0 + $1.quantity }
     }
-
-    enum CodingKeys: String, CodingKey {
-        case userId
-        case items
-        case selectedDeliveryMethod
-        case deliveryCost
-    }
 }

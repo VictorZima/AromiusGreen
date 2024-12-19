@@ -14,25 +14,27 @@ struct AdminOrdersView: View {
     @State private var orders: [Order] = []
     
     var body: some View {
-        VStack {
-            if isLoading {
-                ProgressView("Loading orders...")
-            } else if orders.isEmpty {
-                Text("No orders found.")
-                    .font(.title2)
-                    .padding()
-            } else {
-                List(orders, id: \.id) { order in
-                    AdminOrderRow(order: order)
+        AdminView {
+            VStack {
+                if isLoading {
+                    ProgressView("Loading orders...")
+                } else if orders.isEmpty {
+                    Text("No orders found.")
+                        .font(.title2)
+                        .padding()
+                } else {
+                    List(orders, id: \.id) { order in
+                        AdminOrderRow(order: order)
+                    }
+                    .listStyle(PlainListStyle())
                 }
-                .listStyle(PlainListStyle())
             }
-        }
-        .onAppear {
-            isLoading = true
-            dataManager.fetchAllOrdersForAdmin { fetchedOrders in
-                self.orders = fetchedOrders
-                isLoading = false
+            .onAppear {
+                isLoading = true
+                dataManager.fetchAllOrdersForAdmin { fetchedOrders in
+                    self.orders = fetchedOrders
+                    isLoading = false
+                }
             }
         }
     }

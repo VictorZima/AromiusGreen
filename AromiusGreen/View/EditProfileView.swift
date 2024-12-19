@@ -14,7 +14,6 @@ struct EditProfileView: View {
     @State private var secondName: String = ""
     @State private var country: String = ""
     @State private var city: String = ""
-    @State private var photo: String = ""
 
     var body: some View {
         HStack {
@@ -30,25 +29,19 @@ struct EditProfileView: View {
         .padding()
         
         Form {
-            customTextField("Имя", text: $firstName)
-            customTextField("Фамилия", text: $secondName)
-            customTextField("Страна", text: $country)
-            customTextField("Город", text: $city)
-            // Здесь также может быть UI для загрузки/выбора фото
+            Section(header: Text("Личные данные")) {
+                customTextField("Имя", text: $firstName)
+                customTextField("Фамилия", text: $secondName)
+                customTextField("Страна", text: $country)
+                customTextField("Город", text: $city)
+            }
         }
         .formStyle(.columns)
         .navigationBarTitle("Редактировать профиль", displayMode: .inline)
         Spacer()
 
-        
         .onAppear {
-            if let user = authManager.currentUser {
-                firstName = user.firstName
-                secondName = user.secondName
-                country = user.country
-                city = user.city
-                photo = user.photo ?? ""
-            }
+            loadUserProfile()
         }
     }
     
@@ -65,13 +58,21 @@ struct EditProfileView: View {
             .padding(.horizontal)
     }
     
+    func loadUserProfile() {
+        if let user = authManager.currentUser {
+            firstName = user.firstName ?? ""
+            secondName = user.secondName ?? ""
+            country = user.country ?? ""
+            city = user.city ?? ""
+        }
+    }
+    
     func saveProfileChanges() {
         authManager.saveProfile(
             firstName: firstName,
             secondName: secondName,
             country: country,
-            city: city,
-            photo: photo
+            city: city
         )
     }
 }

@@ -10,9 +10,7 @@ import SwiftUI
 struct AddEditAddressView: View {
     @EnvironmentObject var dataManager: DataManager
     @Environment(\.presentationMode) var presentationMode
-    var address: Address?
 
-    // Поля для ввода информации об адресе
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var phone = ""
@@ -22,6 +20,8 @@ struct AddEditAddressView: View {
     @State private var zipCode = ""
     @State private var isPrimary = false
 
+    var address: Address?
+    
     var body: some View {
         Form {
             Section(header: Text("Contact Details")) {

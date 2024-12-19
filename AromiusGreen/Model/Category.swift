@@ -12,10 +12,4 @@ struct Category: Identifiable, Codable {
     var title: String
     var icon: String
     var sortIndex: Int
-
-    enum CodingKeys: String, CodingKey {
-        case title
-        case icon
-        case sortIndex
-    }
 }

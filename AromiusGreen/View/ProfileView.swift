@@ -53,18 +53,20 @@ struct ProfileView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("\(user.city), \(user.country)")
+                    let location = makeLocation(country: user.country, city: user.city)
+                    Text(location)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
-                    CustomButton(title: "Edit Profile", widthSize: .small) {
+                    
+                    CustomActionButton(title: "Edit Profile", widthSize: .small)  {
                         isEditingProfile = true
                     }
                     
                     HStack(alignment: .center, spacing: 5) {
                         if authManager.currentUser?.isAdmin == true {
                             NavigationLink {
-                                AdminView()
+                                AdminHomeView()
                             } label: {
                                 VStack {
                                     Image(systemName: "storefront")
@@ -163,6 +165,14 @@ struct ProfileView: View {
                 AuthView(isShowingAuthView: $isShowingAuthView)
                     .environmentObject(authManager)
             }
+        }
+    }
+    
+    private func makeLocation(country: String?, city: String?) -> String {
+        if let city = city, let country = country {
+            return "\(country), \(city)"
+        } else {
+            return country ?? city ?? ""
         }
     }
     

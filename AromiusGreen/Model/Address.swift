@@ -18,15 +18,4 @@ struct Address: Identifiable, Codable {
     var street: String
     var zipCode: String?
     var isPrimary: Bool = false
-
-    enum CodingKeys: String, CodingKey {
-        case firstName
-        case lastName
-        case phone
-        case country
-        case city
-        case street
-        case zipCode
-        case isPrimary
-    }
 }

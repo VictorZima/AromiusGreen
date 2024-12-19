@@ -1,5 +1,5 @@
 //
-//  CustomButton.swift
+//  CustomActionButton.swift
 //  AromiusGreen
 //
 //  Created by VictorZima on 14/10/2024.
@@ -7,30 +7,33 @@
 
 import SwiftUI
 
+
 enum ButtonWidthSize {
     case small, medium, large
 }
 
-struct CustomButton: View {
+struct CustomActionButton: View {
     var title: String
     var widthSize: ButtonWidthSize
     var action: (() -> Void)?
-    var destination: (() -> AnyView)?
+    
+    @State private var isPressed = false
     
     var body: some View {
-        if let destination = destination {
-            NavigationLink(destination: destination()) {
-                buttonContent
-            }
-            .padding(.horizontal)
-        } else {
             Button(action: {
                 action?()
             }) {
                 buttonContent
+                    .scaleEffect(isPressed ? 0.95 : 1.0)
+                    .background(isPressed ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
+                    .animation(.easeInOut(duration: 0.2), value: isPressed)
             }
             .padding(.horizontal)
-        }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in isPressed = true }
+                    .onEnded { _ in isPressed = false }
+            )
     }
     
     private var buttonContent: some View {
@@ -57,12 +60,8 @@ struct CustomButton: View {
 
 #Preview {
     VStack(spacing: 20) {
-        CustomButton(title: "Click me", widthSize: .medium, action: {
+        CustomActionButton(title: "Click me", widthSize: .medium, action: {
             print("Button clicked")
-        })
-        
-        CustomButton(title: "Go to next", widthSize: .large, destination: {
-            AnyView(Text("Next screen"))
         })
     }
     .padding()

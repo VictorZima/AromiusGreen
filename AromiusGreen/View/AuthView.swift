@@ -21,24 +21,22 @@ struct AuthView: View {
     
     var body: some View {
         VStack {
-            Text("Create an account or log in to enjoy all the benefits: add products to your cart and favorites, receive notifications about special offers and discounts, and more!")
-                .padding()
-            Text(isRegistration ? "Create Account" : "Log In")
+            Text(isRegistration ? "create_account" : "log_in")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
-            TextField("Email", text: $email)
+            TextField("email_textfield", text: $email)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
                 .keyboardType(.emailAddress)
 
-            SecureField("Password", text: $password)
+            SecureField("password_textfield", text: $password)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
             
             if isRegistration {
-                SecureField("Confirm Password", text: $confirmPassword)
+                SecureField("password_confirm_textfield", text: $confirmPassword)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
@@ -50,7 +48,7 @@ struct AuthView: View {
                     .padding()
             }
             
-            CustomActionButton(title: "\(isRegistration ? "Sign Up" : "Log In")", widthSize: .large, action: isRegistration ? register : login)
+            CustomActionButton(title: "\(isRegistration ? "sign_up" : "log_in")", widthSize: .large, action: isRegistration ? register : login)
             .padding(.top, 20)
             
             Spacer()

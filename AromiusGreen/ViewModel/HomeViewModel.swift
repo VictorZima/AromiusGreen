@@ -13,27 +13,47 @@ class HomeViewModel: ObservableObject {
     @Published var selectedCategory: String? = "All"
     @Published var products: [Product] = []
     @Published var categories: [Category] = []
+    @Published var isDataLoaded: Bool = false
     
-    private var dataManager: DataManager
+    private var dataManager: DataManager?
     private var cancellables = Set<AnyCancellable>()
     
-    init(dataManager: DataManager) {
-            self.dataManager = dataManager
-            loadInitialData()
-            
-            dataManager.$isDataLoaded
-                .sink { [weak self] isLoaded in
-                    if isLoaded {
-                        self?.loadInitialData() // Загружаем данные после флага isDataLoaded
-                    }
-                }
-                .store(in: &cancellables)
+    init() { }
+    
+    func setup(with dataManager: DataManager) {
+        self.dataManager = dataManager
+        fetchInitialData()
+        
+        // Подписка на изменения продуктов
+        dataManager.$products
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] products in
+                self?.products = products
+                print("HomeViewModel: Продукты обновлены: \(products.count)")
+                self?.checkIfDataLoaded()
+            }
+            .store(in: &cancellables)
+    }
+    
+    func fetchInitialData() {
+        guard let dataManager = dataManager else {
+            print("HomeViewModel: DataManager не установлен")
+            return
         }
         
-        func loadInitialData() {
-            products = dataManager.products
-            categories = dataManager.categories
+        // Загрузка категорий один раз
+        dataManager.fetchCategories { [weak self] fetchedCategories in
+            DispatchQueue.main.async {
+                self?.categories = fetchedCategories
+                print("HomeViewModel: Категории обновлены: \(fetchedCategories.count)")
+                self?.checkIfDataLoaded()
+            }
         }
+        
+        // Присвоение текущих продуктов из DataManager
+        self.products = dataManager.products
+        print("HomeViewModel: Продукты загружены: \(products.count)")
+    }
     
     var filteredProducts: [Product] {
         if selectedCategory == "All" || selectedCategory == nil {
@@ -45,7 +65,15 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func selectCategory(_ categoryId: String) {
-        selectedCategory = categoryId
+    func selectCategory(_ categoryId: String?) {
+        selectedCategory = categoryId ?? "All"
+        print("HomeViewModel: Выбрана категория: \(selectedCategory ?? "All")")
+    }
+    
+    private func checkIfDataLoaded() {
+        if !categories.isEmpty && !products.isEmpty {
+            isDataLoaded = true
+            print("HomeViewModel: Все данные загружены")
+        }
     }
 }

@@ -28,7 +28,7 @@ struct AllProductsView: View {
                         }
                         
                         ForEach(viewModel.manufacturers, id: \.id) { manufacturer in
-                            CustomActionButton(title: manufacturer.title, widthSize: .small) {
+                            CustomActionButton(title: manufacturer.title, widthSize: .medium) {
                                 selectedManufacturerId = manufacturer.id
                             }
                         }

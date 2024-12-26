@@ -11,10 +11,10 @@ struct InfoView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("Bat Yam")
+                Text("info_city_part_1")
                     .foregroundColor(.darkBlueItem)
                     .font(.system(size: 20, weight: .bold))
-                + Text(" city")
+                + Text("info_city_part_2")
                     .font(.system(size: 18))
                 Spacer()
             }
@@ -23,7 +23,7 @@ struct InfoView: View {
             HStack(alignment: .top) {
                 Image(systemName: "mappin.and.ellipse")
                     .foregroundColor(Color.green)
-                Text("Balfur str, 87")
+                Text("info_street")
                     .font(.body)
                 
             }
@@ -35,9 +35,7 @@ struct InfoView: View {
                 Image(systemName: "clock")
                     .foregroundStyle(Color.green)
                 VStack(alignment: .leading) {
-                    Text("Sanday - Thursday: 9:00 - 20:00")
-                        .font(.body)
-                    Text("Friday: 9:00 - 15:00")
+                    Text("info_open_days")
                         .font(.body)
                 }
             }
@@ -49,9 +47,9 @@ struct InfoView: View {
                 Image(systemName: "square.and.pencil.circle")
                     .foregroundStyle(Color.green)
                 VStack(alignment: .leading) {
-                    Text("Have questions? Call us or write to WhatsApp")
+                    Text("info_call_us")
                         .font(.body)
-                    Link("058-5001976", destination: URL(string: "tel:+972585001976")!)
+                    Link("info_number_phone", destination: URL(string: "tel:+972585001976")!)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

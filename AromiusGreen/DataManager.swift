@@ -17,6 +17,8 @@ class DataManager: ObservableObject {
     @Published var manufacturers: [Manufacturer] = []
     @Published var productLines: [ProductLine] = []
     @Published var deliveryMethods: [DeliveryMethod] = []
+    @Published var isCategoriesLoaded = false
+    @Published var isProductsLoaded = false
     @Published var isDataLoaded = false
     
     private var db = Firestore.firestore()
@@ -26,7 +28,7 @@ class DataManager: ObservableObject {
     }
     
     init() {
-        fetchCategories()
+        fetchCategories { _ in }
         fetchManufacturersAdmin()
         addProductsListener()
     }
@@ -36,29 +38,98 @@ class DataManager: ObservableObject {
     }
   
     func addProductsListener() {
-        let collectionRef = db.collection("items")
-        
-        productsListener = collectionRef.addSnapshotListener { snapshot, error in
-            guard let snapshot = snapshot else {
-                if let error = error {
-                    print("Ошибка при получении продуктов: \(error.localizedDescription)")
+            let collectionRef = db.collection("items")
+            
+            productsListener = collectionRef.addSnapshotListener { snapshot, error in
+                guard let snapshot = snapshot else {
+                    if let error = error {
+                        print("Ошибка при получении продуктов: \(error.localizedDescription)")
+                    }
+                    return
                 }
-                return
-            }
 
-            self.products = snapshot.documents.compactMap { document in
-                do {
-                    var product = try document.data(as: Product.self)
-                    product.id = document.documentID
-                    return product
-                } catch {
-                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
-                    return nil
+                self.products = snapshot.documents.compactMap { document in
+                    do {
+                        var product = try document.data(as: Product.self)
+                        product.id = document.documentID
+                        return product
+                    } catch {
+                        print("Ошибка при декодировании продукта: \(error.localizedDescription)")
+                        return nil
+                    }
+                }
+                print("DataManager: Продукты обновлены: \(self.products.count)")
+                DispatchQueue.main.async {
+                    self.isProductsLoaded = true
+                    self.checkIfDataLoaded()
                 }
             }
-            self.isDataLoaded = true // Обновляем флаг после загрузки данных
         }
-    }
+        
+        func fetchCategories(completion: @escaping ([Category]) -> Void) {
+            let ref = db.collection("categories").order(by: "sortIndex")
+            ref.getDocuments { snapshot, error in
+                if let error = error {
+                    print("Ошибка при получении категорий: \(error.localizedDescription)")
+                    completion([])
+                    return
+                }
+
+                if let snapshot = snapshot {
+                    self.categories = snapshot.documents.compactMap { document in
+                        do {
+                            var category = try document.data(as: Category.self)
+                            if category.id == nil {
+                                category.id = document.documentID
+                            }
+                            return category
+                        } catch {
+                            print("Ошибка при декодировании категории: \(error.localizedDescription)")
+                            return nil
+                        }
+                    }
+                    print("DataManager: Всего загружено категорий: \(self.categories.count)")
+                    DispatchQueue.main.async {
+                        self.isCategoriesLoaded = true
+                        self.checkIfDataLoaded()
+                        completion(self.categories)
+                    }
+                } else {
+                    completion([])
+                }
+            }
+        }
+        
+        private func checkIfDataLoaded() {
+            if isCategoriesLoaded && isProductsLoaded {
+                self.isDataLoaded = true
+                print("DataManager: Все данные загружены")
+            }
+        }
+    
+//    func addProductsListener() {
+//        let collectionRef = db.collection("items")
+//        
+//        productsListener = collectionRef.addSnapshotListener { snapshot, error in
+//            guard let snapshot = snapshot else {
+//                if let error = error {
+//                    print("Ошибка при получении продуктов: \(error.localizedDescription)")
+//                }
+//                return
+//            }
+//
+//            self.products = snapshot.documents.compactMap { document in
+//                do {
+//                    var product = try document.data(as: Product.self)
+//                    product.id = document.documentID
+//                    return product
+//                } catch {
+//                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
+//                    return nil
+//                }
+//            }
+//        }
+//    }
     
 //    func addProductsListener() {
 //        let collectionRef = db.collection("items")
@@ -234,32 +305,34 @@ class DataManager: ObservableObject {
         }
     }
     
-    func fetchCategories() {
-        categories.removeAll()
-        let db = Firestore.firestore()
-        let ref = db.collection("categories").order(by: "sortIndex")
-        ref.getDocuments { snapshot, error in
-            if let error = error {
-                print("Ошибка при получении категорий: \(error.localizedDescription)")
-                return
-            }
-
-            if let snapshot = snapshot {
-                self.categories = snapshot.documents.compactMap { document in
-                    do {
-                        var category = try document.data(as: Category.self)
-                        if category.id == nil {
-                            category.id = document.documentID
-                        }
-                        return category
-                    } catch {
-                        print("Ошибка при декодировании категории: \(error.localizedDescription)")
-                        return nil
-                    }
-                }
-            }
-        }
-    }
+//    func fetchCategories(completion: @escaping ([Category]) -> Void) {
+//        let ref = db.collection("categories").order(by: "sortIndex")
+//        ref.getDocuments { snapshot, error in
+//            if let error = error {
+//                print("Ошибка при получении категорий: \(error.localizedDescription)")
+//                completion([])
+//                return
+//            }
+//            
+//            if let snapshot = snapshot {
+//                let categories = snapshot.documents.compactMap { document in
+//                    do {
+//                        var category = try document.data(as: Category.self)
+//                        if category.id == nil {
+//                            category.id = document.documentID
+//                        }
+//                        return category
+//                    } catch {
+//                        print("Ошибка при декодировании категории: \(error.localizedDescription)")
+//                        return nil
+//                    }
+//                }
+//                completion(categories)
+//            } else {
+//                completion([])
+//            }
+//        }
+//    }
     
     func addToFavorites(product: Product) {
         guard let productId = product.id else {

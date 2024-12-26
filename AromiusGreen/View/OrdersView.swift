@@ -49,8 +49,8 @@ struct OrderRow: View {
 //            OrderProgressView(currentStatus: order.status)
             
             
-            StatusProgressView(statuses: ["Placed", "Processing", "In Transit", "Awaiting Pickup", "Received"], currentStatus: order.status, statusHistory: order.statusHistory)
-            
+            StatusProgressView(statuses: ["order_status_placed", "Processing", "In Transit", "Awaiting Pickup", "Received"], currentStatus: order.status, statusHistory: order.statusHistory)
+            Text("order_status_placed")
             Text("Items in this order:")
                 .font(.headline)
                 .padding(.top, 5)

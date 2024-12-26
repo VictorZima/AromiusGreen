@@ -17,7 +17,7 @@ struct SettingsView: View {
                     NavigationLink {
                         ShippingInfoView()
                     } label: {
-                        Text("Shipping Information")
+                        Text("settings_shipping_information")
                     }
                 }
                 .listStyle(.grouped)

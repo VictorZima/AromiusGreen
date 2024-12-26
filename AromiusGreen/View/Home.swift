@@ -10,18 +10,23 @@ import FirebaseStorage
 
 struct Home: View {
     @EnvironmentObject var dataManager: DataManager
-    @StateObject private var viewModel = HomeViewModel(dataManager: DataManager())
+    @StateObject private var viewModel = HomeViewModel()
     
     let columns = Array(repeating: GridItem(.flexible(), spacing: 3, alignment: .leading), count: 2)
    
     var body: some View {
         NavigationView {
-            if dataManager.isDataLoaded {
-                contentView
-            } else {
-                ProgressView("...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Group {
+                if viewModel.isDataLoaded {
+                    contentView
+                } else {
+                    ProgressView("Загрузка данных...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
+        }
+        .onAppear {
+            viewModel.setup(with: dataManager)
         }
     }
     
@@ -30,7 +35,7 @@ struct Home: View {
             HStack {
                 ForEach(viewModel.categories) { category in
                     Button {
-                        viewModel.selectedCategory = category.id
+                        viewModel.selectCategory(category.id)
                     } label: {
                         HStack {
                             if !category.icon.isEmpty {
@@ -40,9 +45,8 @@ struct Home: View {
                                     .scaledToFit()
                                     .frame(width: 40, height: 40)
                             }
-                            if viewModel.selectedCategory == category.id || category.id == "All" {
-                                Text(category.title)
-                            }
+                           
+                            Text(category.title)
                         }
                         .frame(minWidth: 40, minHeight: 60)
                         .foregroundStyle(viewModel.selectedCategory == category.id ? .white : .darkBlueItem)
@@ -60,7 +64,7 @@ struct Home: View {
             .padding(.leading, 15)
             .onAppear {
                 if viewModel.selectedCategory == nil {
-                    viewModel.selectedCategory = "All"
+                    viewModel.selectCategory("All")
                 }
             }
         }
@@ -87,12 +91,12 @@ struct Home: View {
     
     private func headerView() -> some View {
         HStack {
-            Text("Dead Sea Cosmetics\nfrom")
+            Text("header_part_1")
                 .font(.system(size: 18))
-            + Text(" AROMIUS")
+            + Text("header_part_2")
                 .foregroundColor(.darkBlueItem)
                 .font(.system(size: 20, weight: .bold))
-            + Text(" shop")
+            + Text("header_part_3")
                 .font(.system(size: 18))
             Spacer()
         }

@@ -55,7 +55,7 @@ struct FavoritesView: View {
     
     private func headerView() -> some View {
         HStack {
-            Text("Favorites")
+            Text("favorites")
                 .foregroundColor(.darkBlueItem)
                 .font(.system(size: 20, weight: .bold))
             Spacer()
@@ -165,9 +165,3 @@ struct ProductCell: View {
     }
     
 }
-
-//#Preview {
-//    FavoritesView()
-//        .environmentObject(AuthManager())
-//        .environmentObject(DataManager())
-//}

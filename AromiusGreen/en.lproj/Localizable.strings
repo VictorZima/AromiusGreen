@@ -1,0 +1,73 @@
+/* 
+  Localizable.strings
+  AromiusGreen
+
+  Created by VictorZima on 20/12/2024.
+  
+*/
+
+"login" = "Login";
+"password" = "Password";
+"logout" = "Log Out";
+"cancel_nav_bar" = "Cancel";
+"save_nav_bar" = "Save";
+
+//ProfileView
+"profile" = "Profile";
+"edit_profile" = "Edit Profile";
+"my_store_button" = "My Store";
+"orders_button" = "Orders";
+"settings_button" = "Settings";
+
+//ProfileView/SettingsView
+"settings_shipping_information" = "Shipping Information";
+
+//ShippingInfoView
+"no_saved_addresses" = "No saved addresses";
+"add_new_address_button" = "Add new Address";
+"primary_address" = "Primary Address";
+
+//ShippingInfo - Alert
+"alert_delete_title" = "Delete this address?";
+"alert_description" = "Are you sure you want to delete this address?";
+"alert_cancel_button" = "Cancel";
+"alert_delete_button" = "Delete";
+
+"signin_register_button" = "Sign in or Register";
+"create_login_description" = "Create an account or log in to enjoy all the benefits: add products to your cart and favorites, receive notifications about special offers and discounts, and more!.";
+
+//AuthView
+"create_account" = "Create Account";
+"log_in" = "Log In";
+"sign_up" = "Sugn Up";
+"email_textfield" = "Email";
+"password_textfield" = "Password";
+"password_confirm_textfield" = "Confirm Password";
+
+//Home
+"header_part_1" = "Dead Sea Cosmetics\nfrom";
+"header_part_2" = " AROMIUS";
+"header_part_3" = " shop";
+
+//Product
+"product_no_description_available" = "No description available.";
+"product_add_to_cart" = "Add to Cart";
+
+//Info
+"info_city_part_1" = "Bat Yam";
+"info_city_part_2" = "city";
+"info_street" = "Balfur str, 87";
+"info_open_days" = "Sanday - Thursday: 9:00 - 20:00\nFriday: 9:00 - 15:00";
+"info_call_us" = "Have questions? Call us or write to WhatsApp";
+"info_number_phone" = "058-5001976";
+
+//ProfileView/EditProfileView - Form
+"personal_info" = "Personal Info";
+"first_name_textfield" = "First Name";
+"last_name_textfield" = "Last Name";
+"country_textfield" = "Country";
+"city_textfield" = "City";
+
+"favorites" = "Favorites";
+
+"order_status_placed" = "Placed";

@@ -1,0 +1,72 @@
+/* 
+  Localizable.strings
+  AromiusGreen
+
+  Created by VictorZima on 20/12/2024.
+  
+*/
+
+"login" = "Логин";
+"password" = "Пароль";
+"logout" = "Выход";
+"cancel_nav_bar" = "Отменить";
+"save_nav_bar" = "Сохранить";
+
+"profile" = "Профиль";
+"edit_profile" = "Редактировать профиль";
+"my_store_button" = "Мой бизнес";
+"orders_button" = "Заказы";
+"settings_button" = "Настройки";
+
+//ProfileView/SettingsView
+"settings_shipping_information" = "Адрес доставки";
+
+//ShippingInfoView
+"no_saved_addresses" = "Нет сохраненных адресов";
+"add_new_address_button" = "Добавить адрес";
+"primary_address" = "Основной адрес";
+
+//ShippingInfo - Alert
+"alert_delete_title" = "Удалить адрес?";
+"alert_description" = "Вы уверены, что хотите удалить этот адрес?";
+"alert_cancel_button" = "Отмена";
+"alert_delete_button" = "Удалить";
+
+"signin_register_button" = "Авторизация/Регистрация";
+"create_login_description" = "Создайте аккаунт или войдите в систему, чтобы воспользоваться всеми преимуществами: добавляйте товары в корзину и избранное, получайте уведомления о специальных предложениях и скидках и многое другое!";
+
+//AuthView
+"create_account" = "Создание аккаунта";
+"log_in" = "Авторизация";
+"sign_up" = "Регистрация";
+"email_textfield" = "Электронная почта";
+"password_textfield" = "Пароль";
+"password_confirm_textfield" = "Подтвердить пароль";
+
+//Home
+"header_part_1" = "Косметика мертвого моря\n";
+"header_part_2" = " Aromius";
+"header_part_3" = " shop";
+
+//Product
+"product_no_description_available" = "Описание отсутствует";
+"product_add_to_cart" = "Добавить в корзину";
+
+//Info
+"info_city_part_1" = "Бат Ям";
+"info_city_part_2" = " ";
+"info_street" = "Бальфур, 87";
+"info_open_days" = "Воскресенье - Четверг: 9:00 - 20:00\nПятница: 9:00 - 15:00";
+"info_call_us" = "Есть вопросы? Звоните нам или пишите на WhatsApp";
+"info_number_phone" = "058-5001976";
+
+//ProfileView/EditProfileView - Form
+"personal_info" = "Персональная информация";
+"first_name_textfield" = "Имя";
+"last_name_textfield" = "Фамилия";
+"country_textfield" = "Страна";
+"city_textfield" = "Город";
+
+"favorites" = "Избранное";
+
+"order_status_placed" = "Размещен";

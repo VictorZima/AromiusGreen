@@ -130,13 +130,13 @@ struct ProductView: View {
                                 .font(.system(size: 15))
                                 .foregroundColor(Color.black)
                         } else {
-                            Text("Описание отсутствует.")
+                            Text("product_no_description_available")
                                 .font(.system(size: 15))
                                 .foregroundColor(Color.gray)
                         }
                     }
                     
-                    CustomActionButton(title: "Add to cart", widthSize: .large) {
+                    CustomActionButton(title: "product_add_to_cart", widthSize: .large) {
                         if dataManager.currentUserId.isEmpty {
                             isShowingAuthView = true
                         } else {

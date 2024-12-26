@@ -18,7 +18,7 @@ struct ProfileView: View {
         NavigationView {
             VStack(alignment: .center) {
                 HStack {
-                    Text("Profile")
+                    Text("profile")
                         .foregroundColor(.darkBlueItem)
                         .font(.system(size: 20, weight: .bold))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -59,7 +59,7 @@ struct ProfileView: View {
                         .foregroundColor(.gray)
                     
                     
-                    CustomActionButton(title: "Edit Profile", widthSize: .small)  {
+                    CustomActionButton(title: "edit_profile", widthSize: .medium)  {
                         isEditingProfile = true
                     }
                     
@@ -72,11 +72,11 @@ struct ProfileView: View {
                                     Image(systemName: "storefront")
                                         .foregroundStyle(Color.darkBlueItem)
                                         .font(.title2)
-                                    Text("My Store")
+                                    Text("my_store_button")
                                         .font(.subheadline)
                                         .foregroundStyle(Color.darkBlueItem)
                                 }
-                                .frame(width: 70, height: 70)
+                                .frame(width: 90, height: 70)
                             }
                             Divider()
                                 .frame(width: 1, height: 60)
@@ -90,7 +90,7 @@ struct ProfileView: View {
                                 Image(systemName: "shippingbox")
                                     .foregroundStyle(Color.darkBlueItem)
                                     .font(.title2)
-                                Text("Orders")
+                                Text("orders_button")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.darkBlueItem)
                             }
@@ -107,7 +107,7 @@ struct ProfileView: View {
                                 Image(systemName: "gearshape.2")
                                     .foregroundStyle(Color.darkBlueItem)
                                     .font(.title2)
-                                Text("Settings")
+                                Text("settings_button")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.darkBlueItem)
                             }
@@ -122,7 +122,7 @@ struct ProfileView: View {
                             Image(systemName: "arrow.backward.circle.fill")
                                 .foregroundColor(.white)
                                 .imageScale(.medium)
-                            Text("Log Out")
+                            Text("logout")
                                 .foregroundColor(.white)
                                 .padding()
                         }
@@ -134,25 +134,14 @@ struct ProfileView: View {
                     .padding(.bottom, 30)
                 } else {
                     VStack(spacing: 20) {
-                        
-                        Text("Create an account or log in to enjoy all the benefits: add products to your cart and favorites, receive notifications about special offers and discounts, and more!.")
+                        Text("create_login_description")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()
                         
-                        Button {
+                        CustomActionButton(title: "signin_register_button", widthSize: .large) {
                             isShowingAuthView = true
-                        } label: {
-                            Text("Sign in or Register")
-                                .foregroundColor(.green)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 17)
-                                        .stroke(Color.green, lineWidth: 2)
-                                )
                         }
-                        .padding(.horizontal, 40)
                     }
                     .padding()
                 }

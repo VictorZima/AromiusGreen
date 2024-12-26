@@ -17,37 +17,37 @@ struct EditProfileView: View {
 
     var body: some View {
         HStack {
-            Button("Cancel") {
+            Button("cancel_nav_bar") {
                 isPresented = false
             }
             Spacer()
-            Button("Save") {
+            Button("save_nav_bar") {
                 saveProfileChanges()
                 isPresented = false
             }
         }
         .padding()
-        
+
         Form {
-            Section(header: Text("Личные данные")) {
-                customTextField("Имя", text: $firstName)
-                customTextField("Фамилия", text: $secondName)
-                customTextField("Страна", text: $country)
-                customTextField("Город", text: $city)
+            Section(header: Text("personal_info").padding(.leading, 16).padding(.bottom, 8)) {
+                customTextField("first_name_textfield", text: $firstName)
+                customTextField("last_name_textfield", text: $secondName)
+                customTextField("country_textfield", text: $country)
+                customTextField("city_textfield", text: $city)
             }
         }
         .formStyle(.columns)
-        .navigationBarTitle("Редактировать профиль", displayMode: .inline)
         Spacer()
 
         .onAppear {
             loadUserProfile()
         }
+//        .navigationBarTitle("edit_profile", displayMode: .inline)
     }
     
     @ViewBuilder
     func customTextField(_ placeholder: String, text: Binding<String>) -> some View {
-        TextField(placeholder, text: text)
+        TextField(LocalizedStringKey(placeholder), text: text)
             .padding()
             .background(Color.clear)
             .cornerRadius(6)

@@ -12,17 +12,17 @@ struct AddressRow: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Получатель: \(address.firstName) \(address.lastName)")
+            Text("\(address.firstName) \(address.lastName)")
                 .font(.headline)
             Text("\(address.country), \(address.city)")
             Text(address.street)
                 .font(.subheadline)
                 .foregroundColor(.gray)
             if let zip = address.zipCode, !zip.isEmpty {
-                Text("Zip Code: \(zip)")
+                Text("\(zip)")
                     .font(.subheadline)
             }
-            Text("Phone: \(address.phone)")
+            Text("\(address.phone)")
                 .font(.subheadline)
             if address.isPrimary {
                 Text("Primary Address")

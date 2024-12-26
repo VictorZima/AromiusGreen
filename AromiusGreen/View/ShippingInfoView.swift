@@ -21,7 +21,7 @@ struct ShippingInfoView: View {
             VStack {
                 if addresses.isEmpty {
                     Spacer()
-                    Text("You have no saved addresses.")
+                    Text("no_saved_addresses")
                         .foregroundColor(.gray)
                         .padding()
                     Spacer()
@@ -49,7 +49,7 @@ struct ShippingInfoView: View {
                     NavigationLink {
                         AddEditAddressView(address: nil)
                     } label: {
-                        Text("Add new address")
+                        Text("add_new_address_button")
                             .foregroundColor(.darkBlueItem)
                             .frame(width: 200)
                             .padding(.vertical, 12)

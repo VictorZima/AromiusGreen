@@ -9,9 +9,9 @@ import SwiftUI
 
 struct AdminHomeView: View {
     private let adminSections: [AdminSection] = [
-        AdminSection(title: "Orders", destination: AnyView(AdminOrdersView())),
-        AdminSection(title: "Products", destination: AnyView(AllProductsView(dataManager: DataManager()))),
-        AdminSection(title: "Manufacturers", destination: AnyView(ManufacturersView()))
+        AdminSection(title: "admin_orders_buttons", destination: AnyView(AdminOrdersView())),
+        AdminSection(title: "admin_roducts_buttons", destination: AnyView(AllProductsView(dataManager: DataManager()))),
+        AdminSection(title: "admin_manufacturers_buttons", destination: AnyView(ManufacturersView()))
     ]
     
     var body: some View {
@@ -23,7 +23,7 @@ struct AdminHomeView: View {
                 Spacer()
             }
             .padding(40)
-            .navigationTitle("Admin Dashboard")
+            .navigationTitle("admin_dasboard_title")
         }
     }
 }

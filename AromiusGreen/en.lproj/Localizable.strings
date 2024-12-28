@@ -68,6 +68,18 @@
 "country_textfield" = "Country";
 "city_textfield" = "City";
 
+
 "favorites" = "Favorites";
+
+//CartView
+"cart_title" = "Cart";
+"choose_delivery_method" = "Choose a delivery method";
+"cart_empty" = "Your cart is empty";
+
+//AdminHomeView
+"admin_dasboard_title" = "Admin Dashboard";
+"admin_orders_buttons" = "Orders";
+"admin_roducts_buttons" = "Products";
+"admin_manufacturers_buttons" = "Manufacturers";
 
 "order_status_placed" = "Placed";

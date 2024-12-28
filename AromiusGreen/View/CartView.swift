@@ -22,7 +22,7 @@ struct CartView: View {
         NavigationView {
             VStack(alignment: .leading) {
                 HStack {
-                    Text("Cart")
+                    Text("cart_title")
                         .foregroundColor(.darkBlueItem)
                         .font(.system(size: 20, weight: .bold))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -33,7 +33,7 @@ struct CartView: View {
                 if authManager.isUserAuthenticated {
                     if cartManager.cartItems.isEmpty {
                         VStack {
-                            Text("Your cart is empty")
+                            Text("cart_empty")
                                 .font(.title2)
                                 .padding()                            
                         }
@@ -102,7 +102,7 @@ struct CartView: View {
                     }
                 } else {
                     VStack(spacing: 20) {
-                        Text("Your cart is empty!")
+                        Text("cart_empty")
                             .font(.title2)
                             .padding()
                         Text("Please sign in or register to save items to your cart and view them later.")

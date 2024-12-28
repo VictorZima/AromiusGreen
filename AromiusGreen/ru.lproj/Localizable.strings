@@ -67,6 +67,18 @@
 "country_textfield" = "Страна";
 "city_textfield" = "Город";
 
+
 "favorites" = "Избранное";
+
+//CartView
+"cart_title" = "Корзина";
+"choose_delivery_method" = "Выберете метод доставки";
+"cart_empty" = "Ваша корзина пуста";
+
+//AdminHomeView
+"admin_dasboard_title" = "Админ панель";
+"admin_orders_buttons" = "Заказы";
+"admin_roducts_buttons" = "Продукция";
+"admin_manufacturers_buttons" = "Производители";
 
 "order_status_placed" = "Размещен";

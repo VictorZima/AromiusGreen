@@ -20,7 +20,7 @@ struct CustomNavigationButton<Destination: View>: View {
     }
 
     private var buttonContent: some View {
-        Text(title)
+        Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(.darkBlueItem)
             .frame(width: width(for: widthSize))
             .padding(.vertical, 12)

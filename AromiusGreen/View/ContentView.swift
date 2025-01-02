@@ -14,14 +14,17 @@ struct ContentView: View {
     
     @StateObject private var favoritesViewModel = FavoritesViewModel()
     
+    @State private var selectedTab: Tab = .home
+    
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             Home()
                 .tabItem {
                     VStack {
                         Image(systemName: "house")
                     }
                 }
+                .tag(Tab.home)
 
             FavoritesView()
                 .tabItem {
@@ -29,6 +32,7 @@ struct ContentView: View {
                         Image(systemName: "suit.heart.fill")
                     }
                 }
+                .tag(Tab.favorites)
                 .environmentObject(favoritesViewModel)
             InfoView()
                 .tabItem {
@@ -36,18 +40,21 @@ struct ContentView: View {
                         Image(systemName: "map")
                     }
                 }
+                .tag(Tab.info)
             ProfileView()
                 .tabItem {
                     VStack {
                         Image(systemName: "person")
                     }
                 }
+                .tag(Tab.profile)
             CartView()
                 .tabItem {
                     VStack {
                         Image(systemName: "cart")
                     }
                 }
+                .tag(Tab.cart)
                 .badge(authManager.isUserAuthenticated && cartManager.cartItems.count > 0 ? "\(cartManager.cartItems.count)" : nil)
         }
         .tint(.darkBlueItem)
@@ -57,6 +64,14 @@ struct ContentView: View {
             favoritesViewModel.fetchFavorites()
         }
     }
+}
+
+enum Tab: String {
+    case home = "Home"
+    case favorites = "Favorites"
+    case info = "Info"
+    case profile = "Profile"
+    case cart = "Cart"
 }
 
 #Preview {

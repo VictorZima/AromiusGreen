@@ -448,7 +448,6 @@ class DataManager: ObservableObject {
             deliveryCost: deliveryCost,
             deliveryAddress: deliveryAddress
         )
-        order.statusHistory.append(OrderStatusHistory(status: order.status))
         
         do {
             try orderRef.setData(from: order) { error in

@@ -50,6 +50,7 @@ struct OrderRow: View {
                 currentStatus: order.status,
                 statusHistory: order.statusHistory
             )
+            .padding(.horizontal, 10)
             
             Text("order_items_in_order")
                 .font(.headline)

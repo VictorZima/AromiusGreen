@@ -17,6 +17,7 @@
 		2813A38D2CB75384005A5E5D /* AddEditAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A38C2CB75384005A5E5D /* AddEditAddressView.swift */; };
 		2813A38F2CB75C2C005A5E5D /* AddressRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A38E2CB75C2C005A5E5D /* AddressRow.swift */; };
 		2813A3B22CBCB53D005A5E5D /* CustomActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2813A3B12CBCB53D005A5E5D /* CustomActionButton.swift */; };
+		281B3DC02D28D0BA00FC9867 /* QuantityFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281B3DBF2D28D0BA00FC9867 /* QuantityFormatter.swift */; };
 		288762C32C9093F700886A66 /* AllProductsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288762C22C9093F700886A66 /* AllProductsView.swift */; };
 		288762C62C909D4D00886A66 /* OldAddProductView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288762C52C909D4D00886A66 /* OldAddProductView.swift */; };
 		288762C82C91B6BC00886A66 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288762C72C91B6BC00886A66 /* ImageEditorView.swift */; };
@@ -83,6 +84,7 @@
 		2813A38C2CB75384005A5E5D /* AddEditAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditAddressView.swift; sourceTree = "<group>"; };
 		2813A38E2CB75C2C005A5E5D /* AddressRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressRow.swift; sourceTree = "<group>"; };
 		2813A3B12CBCB53D005A5E5D /* CustomActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomActionButton.swift; sourceTree = "<group>"; };
+		281B3DBF2D28D0BA00FC9867 /* QuantityFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantityFormatter.swift; sourceTree = "<group>"; };
 		288762C22C9093F700886A66 /* AllProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllProductsView.swift; sourceTree = "<group>"; };
 		288762C52C909D4D00886A66 /* OldAddProductView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldAddProductView.swift; sourceTree = "<group>"; };
 		288762C72C91B6BC00886A66 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				288A98522C080CD7007ABC1C /* Image+Cashe.swift */,
 				288762CD2C930ED800886A66 /* Double+Extensions.swift */,
 				28915EB52CA24F3600F7F04E /* UIColor+ConvenienceInit.swift */,
+				281B3DBF2D28D0BA00FC9867 /* QuantityFormatter.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -361,6 +364,7 @@
 			knownRegions = (
 				en,
 				ru,
+				Base,
 			);
 			mainGroup = 28FF49C72C0806AB00FA829C;
 			packageReferences = (
@@ -395,6 +399,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2813A3872CB74BD0005A5E5D /* SettingsView.swift in Sources */,
+				281B3DC02D28D0BA00FC9867 /* QuantityFormatter.swift in Sources */,
 				28F7D0B62C8F2B2A0065785C /* AdminHomeView.swift in Sources */,
 				28BC03002CCB421500E8ADE2 /* AddManufacturerView.swift in Sources */,
 				28AC36F52CDF08DC0076DF88 /* HomeViewModel.swift in Sources */,

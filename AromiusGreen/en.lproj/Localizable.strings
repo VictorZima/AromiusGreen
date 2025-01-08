@@ -76,10 +76,21 @@
 "choose_delivery_method" = "Choose a delivery method";
 "cart_empty" = "Your cart is empty";
 
+//OrdersView
+"order_need_signin" = "You need to sign in to see your orders.";
+"order_items_in_order" = "Items in this order:";
+"order_delivery_amount" = "Delivery Amount: %@ ₪";
+"order_total_amount" = "Total Amount: %@ ₪";
+"order_quantity" = "Qty: %d";
+
 //AdminHomeView
 "admin_dasboard_title" = "Admin Dashboard";
 "admin_orders_buttons" = "Orders";
 "admin_roducts_buttons" = "Products";
 "admin_manufacturers_buttons" = "Manufacturers";
 
-"order_status_placed" = "Placed";
+"status.1" = "Placed";
+"status.2" = "Paid";
+"status.3" = "Processing";
+"status.4" = "Shipped";
+"status.5" = "Received";

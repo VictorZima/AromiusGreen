@@ -524,36 +524,43 @@ class DataManager: ObservableObject {
         }
     }
     
-    func updateOrderStatus(orderId: String, newStatus: String, completion: @escaping (Bool) -> Void) {
+    func updateOrderStatus(orderId: String, newStatus: OrderStatus, completion: @escaping (Bool) -> Void) {
         let db = Firestore.firestore()
         let orderRef = db.collection("orders").document(orderId)
         
         orderRef.getDocument { document, error in
-            if let document = document, document.exists {
-                do {
-                    var order = try document.data(as: Order.self)
-                    
-                    let newStatusHistory = OrderStatusHistory(status: newStatus) // Добавляем статус с текущим временем
-                    order.statusHistory.append(newStatusHistory)
-                    
-                    order.status = newStatus
-                    order.updatedAt = Date() // Обновляем время обновления заказа
-                    
-                    try orderRef.setData(from: order) { error in
-                        if let error = error {
-                            print("Ошибка при обновлении заказа: \(error.localizedDescription)")
-                            completion(false)
-                        } else {
-                            print("Статус заказа успешно обновлен")
-                            completion(true)
-                        }
-                    }
-                } catch {
-                    print("Ошибка при чтении данных заказа: \(error.localizedDescription)")
-                    completion(false)
-                }
-            } else {
+            if let error = error {
+                print("Ошибка при получении заказа: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+            
+            guard let document = document, document.exists else {
                 print("Документ заказа не найден")
+                completion(false)
+                return
+            }
+            
+            do {
+                var order = try document.data(as: Order.self)
+                
+                let newStatusHistory = OrderStatusHistory(status: newStatus) // Используем OrderStatus
+                order.statusHistory.append(newStatusHistory)
+                
+                order.status = newStatus // Присваиваем OrderStatus
+                order.updatedAt = Date() // Обновляем время обновления заказа
+                
+                try orderRef.setData(from: order) { error in
+                    if let error = error {
+                        print("Ошибка при обновлении заказа: \(error.localizedDescription)")
+                        completion(false)
+                    } else {
+                        print("Статус заказа успешно обновлен")
+                        completion(true)
+                    }
+                }
+            } catch {
+                print("Ошибка при декодировании заказа: \(error.localizedDescription)")
                 completion(false)
             }
         }

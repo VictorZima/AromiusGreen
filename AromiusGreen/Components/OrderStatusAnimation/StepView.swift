@@ -10,30 +10,34 @@ import SwiftUI
 struct StepView: View {
     var isCompleted: Bool
     var title: String
-    
+
     var body: some View {
-        ZStack {
-            if isCompleted {
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 20, height: 20)
-                    .overlay(
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.white)
-                            .font(.system(size: 12, weight: .bold))
-                    )
-            } else {
-                Circle()
-                    .fill(Color.gray.opacity(1.0))
-                    .frame(width: 20, height: 20)
-                    .overlay(
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 13, height: 13)
-                    )
+        VStack {
+            ZStack {
+                if isCompleted {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 20, height: 20)
+                        .overlay(
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .bold))
+                        )
+                } else {
+                    Circle()
+                        .fill(Color.gray.opacity(1.0))
+                        .frame(width: 20, height: 20)
+                        .overlay(
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 13, height: 13)
+                        )
+                }
             }
+//            Text(title)
+//                .font(.caption)
+//                .foregroundColor(isCompleted ? .green : .gray)
         }
         .animation(.easeInOut(duration: 0.3), value: isCompleted)
     }
 }
-

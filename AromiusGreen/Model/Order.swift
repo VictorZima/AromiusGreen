@@ -13,7 +13,7 @@ struct Order: Identifiable, Codable {
     var userId: String
     var items: [CartItem]
     var totalAmount: Double
-    var status: String
+    var status: OrderStatus
     var createdAt: Date
     var deliveryMethod: String
     var deliveryCost: Double
@@ -25,20 +25,21 @@ struct Order: Identifiable, Codable {
         self.userId = userId
         self.items = items
         self.totalAmount = totalAmount
-        self.status = "Placed"
+        self.status = .placed
         self.createdAt = Date()
         self.deliveryMethod = deliveryMethod
         self.deliveryCost = deliveryCost
         self.deliveryAddress = deliveryAddress
-        self.statusHistory = [OrderStatusHistory(status: "Placed")]
+        self.statusHistory = [OrderStatusHistory(status: .placed)]
     }
 }
 
-struct OrderStatusHistory: Codable {
-    var status: String
+struct OrderStatusHistory: Identifiable, Codable {
+    var id: UUID = UUID()
+    var status: OrderStatus
     var date: Date
     
-    init(status: String) {
+    init(status: OrderStatus) {
         self.status = status
         self.date = Date()
     }

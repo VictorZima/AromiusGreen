@@ -75,10 +75,21 @@
 "choose_delivery_method" = "Выберете метод доставки";
 "cart_empty" = "Ваша корзина пуста";
 
+//OrdersView
+"order_need_signin" = "Авторизуйтесь, что бы видеть ваши заказы.";
+"order_items_in_order" = "Товары в заказе:";
+"order_delivery_amount" = "Стоимость доставки: %@ ₪";
+"order_total_amount" = "Сумма к оплате: %@ ₪";
+"order_quantity" = "шт. %d";
+
 //AdminHomeView
 "admin_dasboard_title" = "Админ панель";
 "admin_orders_buttons" = "Заказы";
 "admin_roducts_buttons" = "Продукция";
 "admin_manufacturers_buttons" = "Производители";
 
-"order_status_placed" = "Размещен";
+"status.1" = "Размещен";
+"status.2" = "Оплачен";
+"status.3" = "В обработке";
+"status.4" = "Отправлен";
+"status.5" = "Доставлен";

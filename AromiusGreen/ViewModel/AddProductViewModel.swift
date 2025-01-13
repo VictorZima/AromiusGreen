@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 class AddProductViewModel: ObservableObject {
     @Published var title: String = ""
@@ -15,7 +16,6 @@ class AddProductViewModel: ObservableObject {
     @Published var priceString: String = ""
     @Published var purchasePriceString: String = ""
     @Published var selectedCategoryIds: [String] = []
-//    @Published var selectedManufacturer: ManufacturerSummary? = nil
     @Published var selectedManufacturerId: String? = nil
     @Published var selectedManufacturerName: String? = nil
     
@@ -27,10 +27,12 @@ class AddProductViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
     
+    @Published var productImageData: Data? = nil
+    
     var dataManager: DataManager?
     
     func saveProduct() {
-        guard let dataManager = dataManager else {
+        guard let _ = dataManager else {
             alertMessage = "Data Manager is not initialized."
             showAlert = true
             return
@@ -52,7 +54,28 @@ class AddProductViewModel: ObservableObject {
         }
         
         let purchasePrice = Double(purchasePriceString)
-        
+
+        if let imageData = productImageData, let image = UIImage(data: imageData) {
+            Task {
+                // Вызываем асинхронный метод для загрузки изображения и его превью
+                let result = await DataManager.uploadResizedPhotos(itemImage: image)
+                DispatchQueue.main.async { [weak self] in
+                    // Проверяем, что оба URL получены
+                    if let originalUrl = result.original, let thumbnailUrl = result.thumbnail {
+                        self?.createProduct(with: originalUrl, thumbnail: thumbnailUrl, purchasePrice: purchasePrice)
+                    } else {
+                        self?.isSaving = false
+                        self?.alertMessage = "Ошибка: не удалось загрузить изображения."
+                        self?.showAlert = true
+                    }
+                }
+            }
+        } else {
+            createProduct(with: nil, thumbnail: nil, purchasePrice: purchasePrice)
+        }
+    }
+    
+    private func createProduct(with imageUrl: String?, thumbnail: String?, purchasePrice: Double?) {
         let newProduct = Product(
             id: nil,
             title: title,
@@ -60,16 +83,15 @@ class AddProductViewModel: ObservableObject {
             productDescription: productDescription?.isEmpty == false ? productDescription : nil,
             value: value.isEmpty ? nil : value,
             categoryIds: selectedCategoryIds,
-            manufacturer: ManufacturerSummary(id: manufacturerId, title: manufacturerName, logo: ""),
-            productLine: nil,
-            image: nil,
-            thumbnailImage: nil,
-            price: price,
+            manufacturer: ManufacturerSummary(id: selectedManufacturerId ?? "", title: selectedManufacturerName ?? "", logo: nil),
+            productLine: ProductLineSummary(id: selectedProductLineId ?? "", title: selectedProductLineName ?? "", logo: nil),
+            image: imageUrl,
+            thumbnailImage: thumbnail, // Здесь сохраняем URL миниатюры
+            price: Double(priceString) ?? 0.0,
             purchasePrice: purchasePrice
         )
         
-        isSaving = true
-        dataManager.addProduct(newProduct) { [weak self] result in
+        dataManager?.addProduct(newProduct) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isSaving = false
                 switch result {
@@ -83,7 +105,7 @@ class AddProductViewModel: ObservableObject {
             }
         }
     }
-    
+            
     private func resetForm() {
         title = ""
         barcode = ""

@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct AddProductView: View {
     @EnvironmentObject var dataManager: DataManager
     @StateObject private var viewModel: AddProductViewModel
-
+    
+    @State private var photosPickerItem: PhotosPickerItem? = nil
+    @State private var selectedImage: UIImage? = nil
+    
     init() {
         _viewModel = StateObject(wrappedValue: AddProductViewModel())
     }
@@ -18,6 +22,40 @@ struct AddProductView: View {
     var body: some View {
         AdminView {
             Form {
+                Section(header: Text("Image")) {
+                    PhotosPicker(selection: $photosPickerItem, matching: .images) {
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 200, height: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .clipped()
+                        } else {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .foregroundColor(.gray)
+                                .opacity(0.5)
+                        }
+                    }
+                    .onChange(of: photosPickerItem) { newItem in
+                        if let newItem = newItem {
+                            Task {
+                                if let data = try? await newItem.loadTransferable(type: Data.self),
+                                   let image = UIImage(data: data) {
+                                    selectedImage = image
+                                    viewModel.productImageData = data  // НЕ ЗАБЫВАЕМ сохранить данные в ViewModel!
+                                    print("Image successfully selected")
+                                } else {
+                                    print("Failed to load image")
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 Section(header: Text("Basic Information")) {
                     TextField("Title", text: $viewModel.title)
                         .autocapitalization(.words)

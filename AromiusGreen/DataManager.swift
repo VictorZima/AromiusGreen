@@ -178,7 +178,7 @@ class DataManager: ObservableObject {
     }
   
     func addProduct(_ product: Product, completion: @escaping (Result<Product, Error>) -> Void) {
-        let docRef = db.collection("products").document()
+        let docRef = db.collection("items").document()
         var newProduct = product
         newProduct.id = docRef.documentID
         do {
@@ -197,6 +197,8 @@ class DataManager: ObservableObject {
         }
     }
      
+   
+    
     func fetchManufacturers(completion: @escaping (Result<[Manufacturer], Error>) -> Void) {
         db.collection("manufacturers").getDocuments { [weak self] (querySnapshot, error) in
             if let error = error {
@@ -440,7 +442,7 @@ class DataManager: ObservableObject {
         
         let finalTotalAmount = totalAmount + deliveryCost
         
-        var order = Order(
+        let order = Order(
             userId: userId,
             items: cartItems,
             totalAmount: finalTotalAmount,
@@ -721,6 +723,89 @@ class DataManager: ObservableObject {
             }
         }
     }
+    
+    func uploadImage(data: Data, directory: String, completion: @escaping (Result<String, Error>) -> Void) {
+        // Формируем путь с указанной директорией и расширением .png
+        let imagePath = "\(directory)/\(UUID().uuidString).png"
+        let storageRef = Storage.storage().reference().child(imagePath)
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/png"
+        
+        storageRef.putData(data, metadata: metadata) { metadata, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            storageRef.downloadURL { url, error in
+                if let error = error {
+                    completion(.failure(error))
+                } else if let url = url {
+                    // Возвращаем только последний компонент URL (имя файла)
+                    completion(.success(url.lastPathComponent))
+                } else {
+                    let err = NSError(domain: "UploadErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+                    completion(.failure(err))
+                }
+            }
+        }
+    }
+    
+    static func uploadImage(data: Data, directory: String) async -> Result<String, Error> {
+            let storageRef = Storage.storage().reference()
+            // Формируем путь: например, "items_images/UUID.png" или "items_images/thumbnails/UUID.png"
+            let imagePath = "\(directory)/\(UUID().uuidString).png"
+            let imageRef = storageRef.child(imagePath)
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/png"
+            
+            do {
+                _ = try await imageRef.putDataAsync(data, metadata: metadata)
+                let url = try await imageRef.downloadURL()
+                return .success(url.lastPathComponent)
+            } catch {
+                return .failure(error)
+            }
+        }
+        
+        /// Функция, объединяющая изменение размеров и загрузку изображения.
+        /// Оригинальное изображение сохраняется в "items_images", миниатюра – в "items_images/thumbnails".
+        static func uploadResizedPhotos(itemImage: UIImage?) async -> (original: String?, thumbnail: String?) {
+            guard let itemImage = itemImage else {
+                return (nil, nil)
+            }
+            
+            let thumbnailSize: CGFloat = 150
+            let originalSize: CGFloat = 300
+            
+            guard let thumbnailImage = resizedImageToSquare(itemImage, size: thumbnailSize),
+                  // Используем pngData() для получения данных в формате PNG
+                  let thumbnailData = thumbnailImage.pngData(),
+                  let originalImage = resizedImageToSquare(itemImage, size: originalSize),
+                  let originalData = originalImage.pngData() else {
+                return (nil, nil)
+            }
+            
+            // Загружаем миниатюру в директорию "items_images/thumbnails"
+            let thumbnailResult = await uploadImage(data: thumbnailData, directory: "items_images/thumbnails")
+            // Загружаем оригинальное изображение в директорию "items_images"
+            let originalResult = await uploadImage(data: originalData, directory: "items_images")
+            
+            switch (originalResult, thumbnailResult) {
+            case (.success(let originalURL), .success(let thumbnailURL)):
+                return (originalURL, thumbnailURL)
+            default:
+                return (nil, nil)
+            }
+        }
+        
+        /// Функция для изменения размера изображения до заданного квадратного размера.
+        static func resizedImageToSquare(_ image: UIImage, size: CGFloat) -> UIImage? {
+            let newSize = CGSize(width: size, height: size)
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            return renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: newSize))
+            }
+        }
 }
 
 extension Firestore.Encoder {

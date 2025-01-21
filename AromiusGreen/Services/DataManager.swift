@@ -21,7 +21,7 @@ class DataManager: ObservableObject {
     @Published var isProductsLoaded = false
     @Published var isDataLoaded = false
     
-    private var db = Firestore.firestore()
+    var db = Firestore.firestore()
     private var productsListener: ListenerRegistration?
     var currentUserId: String {
         Auth.auth().currentUser?.uid ?? ""
@@ -36,168 +36,76 @@ class DataManager: ObservableObject {
     deinit {
         productsListener?.remove()
     }
-  
+    
     func addProductsListener() {
-            let collectionRef = db.collection("items")
-            
-            productsListener = collectionRef.addSnapshotListener { snapshot, error in
-                guard let snapshot = snapshot else {
-                    if let error = error {
-                        print("Ошибка при получении продуктов: \(error.localizedDescription)")
-                    }
-                    return
+        let collectionRef = db.collection("items")
+        
+        productsListener = collectionRef.addSnapshotListener { snapshot, error in
+            guard let snapshot = snapshot else {
+                if let error = error {
+                    print("Error fetching products: \(error.localizedDescription)")
                 }
-
-                self.products = snapshot.documents.compactMap { document in
+                return
+            }
+            
+            self.products = snapshot.documents.compactMap { document in
+                do {
+                    var product = try document.data(as: Product.self)
+                    product.id = document.documentID
+                    return product
+                } catch {
+                    print("Error decoding product: \(error.localizedDescription)")
+                    return nil
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.isProductsLoaded = true
+                self.checkIfDataLoaded()
+            }
+        }
+    }
+    
+    func fetchCategories(completion: @escaping ([Category]) -> Void) {
+        let ref = db.collection("categories").order(by: "sortIndex")
+        ref.getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching categories: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+            
+            if let snapshot = snapshot {
+                self.categories = snapshot.documents.compactMap { document in
                     do {
-                        var product = try document.data(as: Product.self)
-                        product.id = document.documentID
-                        return product
+                        var category = try document.data(as: Category.self)
+                        if category.id == nil {
+                            category.id = document.documentID
+                        }
+                        return category
                     } catch {
-                        print("Ошибка при декодировании продукта: \(error.localizedDescription)")
+                        print("Error decoding category: \(error.localizedDescription)")
                         return nil
                     }
                 }
-                print("DataManager: Продукты обновлены: \(self.products.count)")
+                
                 DispatchQueue.main.async {
-                    self.isProductsLoaded = true
+                    self.isCategoriesLoaded = true
                     self.checkIfDataLoaded()
-                }
-            }
-        }
-        
-        func fetchCategories(completion: @escaping ([Category]) -> Void) {
-            let ref = db.collection("categories").order(by: "sortIndex")
-            ref.getDocuments { snapshot, error in
-                if let error = error {
-                    print("Ошибка при получении категорий: \(error.localizedDescription)")
-                    completion([])
-                    return
-                }
-
-                if let snapshot = snapshot {
-                    self.categories = snapshot.documents.compactMap { document in
-                        do {
-                            var category = try document.data(as: Category.self)
-                            if category.id == nil {
-                                category.id = document.documentID
-                            }
-                            return category
-                        } catch {
-                            print("Ошибка при декодировании категории: \(error.localizedDescription)")
-                            return nil
-                        }
-                    }
-                    print("DataManager: Всего загружено категорий: \(self.categories.count)")
-                    DispatchQueue.main.async {
-                        self.isCategoriesLoaded = true
-                        self.checkIfDataLoaded()
-                        completion(self.categories)
-                    }
-                } else {
-                    completion([])
-                }
-            }
-        }
-        
-        private func checkIfDataLoaded() {
-            if isCategoriesLoaded && isProductsLoaded {
-                self.isDataLoaded = true
-                print("DataManager: Все данные загружены")
-            }
-        }
-    
-//    func addProductsListener() {
-//        let collectionRef = db.collection("items")
-//        
-//        productsListener = collectionRef.addSnapshotListener { snapshot, error in
-//            guard let snapshot = snapshot else {
-//                if let error = error {
-//                    print("Ошибка при получении продуктов: \(error.localizedDescription)")
-//                }
-//                return
-//            }
-//
-//            self.products = snapshot.documents.compactMap { document in
-//                do {
-//                    var product = try document.data(as: Product.self)
-//                    product.id = document.documentID
-//                    return product
-//                } catch {
-//                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
-//                    return nil
-//                }
-//            }
-//        }
-//    }
-    
-//    func addProductsListener() {
-//        let collectionRef = db.collection("items")
-//        
-//        productsListener = collectionRef.addSnapshotListener { snapshot, error in
-//            guard let snapshot = snapshot else {
-//                if let error = error {
-//                    print("Ошибка при получении продуктов: \(error.localizedDescription)")
-//                }
-//                return
-//            }
-//
-//            self.products = snapshot.documents.compactMap { document in
-//                do {
-//                    var product = try document.data(as: Product.self)
-//                    product.id = document.documentID
-//                    return product
-//                } catch {
-//                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
-//                    return nil
-//                }
-//            }
-//        }
-//    }
-    
-    func fetchProductById(productId: String, completion: @escaping (Product?) -> Void) {
-        let docRef = db.collection("items").document(productId)
-
-        docRef.getDocument { document, error in
-            if let error = error {
-                print("Ошибка при получении продукта: \(error.localizedDescription)")
-                completion(nil)
-            } else if let document = document, document.exists {
-                do {
-                    let product = try document.data(as: Product.self)
-                    completion(product)
-                } catch {
-                    print("Ошибка при декодировании продукта: \(error.localizedDescription)")
-                    completion(nil)
+                    completion(self.categories)
                 }
             } else {
-                print("Продукт не найден")
-                completion(nil)
+                completion([])
             }
         }
     }
-  
-    func addProduct(_ product: Product, completion: @escaping (Result<Product, Error>) -> Void) {
-        let docRef = db.collection("items").document()
-        var newProduct = product
-        newProduct.id = docRef.documentID
-        do {
-            try docRef.setData(from: newProduct) { [weak self] error in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    DispatchQueue.main.async {
-                        self?.products.append(newProduct)
-                    }
-                    completion(.success(newProduct))
-                }
-            }
-        } catch let error {
-            completion(.failure(error))
+    
+    private func checkIfDataLoaded() {
+        if isCategoriesLoaded && isProductsLoaded {
+            self.isDataLoaded = true
+            print("DataManager: All data loaded")
         }
     }
-     
-   
     
     func fetchManufacturers(completion: @escaping (Result<[Manufacturer], Error>) -> Void) {
         db.collection("manufacturers").getDocuments { [weak self] (querySnapshot, error) in
@@ -306,129 +214,6 @@ class DataManager: ObservableObject {
             completion(.failure(error))
         }
     }
-    
-//    func fetchCategories(completion: @escaping ([Category]) -> Void) {
-//        let ref = db.collection("categories").order(by: "sortIndex")
-//        ref.getDocuments { snapshot, error in
-//            if let error = error {
-//                print("Ошибка при получении категорий: \(error.localizedDescription)")
-//                completion([])
-//                return
-//            }
-//            
-//            if let snapshot = snapshot {
-//                let categories = snapshot.documents.compactMap { document in
-//                    do {
-//                        var category = try document.data(as: Category.self)
-//                        if category.id == nil {
-//                            category.id = document.documentID
-//                        }
-//                        return category
-//                    } catch {
-//                        print("Ошибка при декодировании категории: \(error.localizedDescription)")
-//                        return nil
-//                    }
-//                }
-//                completion(categories)
-//            } else {
-//                completion([])
-//            }
-//        }
-//    }
-    
-    func addToFavorites(product: Product) {
-        guard let productId = product.id else {
-            print("Ошибка: у продукта нет идентификатора")
-            return
-        }
-
-        let db = Firestore.firestore()
-        let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-
-        guard let thumbnailImage = product.thumbnailImage else {
-            return
-        }
-        let favoriteProduct = FavoriteProduct(
-            productId: productId,
-            title: product.title,
-            manufacturer: product.manufacturer,
-            productLine: product.productLine,
-            thumbnailImage: thumbnailImage
-        )
-
-        favoritesRef.document(productId).getDocument { document, error in
-            if let document = document, document.exists {
-                print("Продукт уже находится в избранном")
-            } else {
-                do {
-                    try favoritesRef.document(productId).setData(from: favoriteProduct) { error in
-                        if let error = error {
-                            print("Ошибка при добавлении в избранное: \(error.localizedDescription)")
-                        } else {
-                            print("Продукт успешно добавлен в избранное")
-                        }
-                    }
-                } catch {
-                    print("Ошибка при кодировании избранного продукта: \(error.localizedDescription)")
-                }
-            }
-        }
-    }
-    
-    func removeFromFavorites(productId: String) {
-        let db = Firestore.firestore()
-        let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-
-        favoritesRef.document(productId).delete { error in
-            if let error = error {
-                print("Ошибка при удалении из избранного: \(error.localizedDescription)")
-            } else {
-                print("Продукт успешно удален из избранного")
-            }
-        }
-    }
-    
-    func isFavorite(productId: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-        
-        favoritesRef.document(productId).getDocument { document, error in
-            if let document = document, document.exists {
-                completion(true)
-            } else {
-                completion(false)
-            }
-        }
-    }
-    
-    func fetchFavorites(completion: @escaping ([FavoriteProduct]) -> Void) {
-        let db = Firestore.firestore()
-        let favoritesRef = db.collection("users").document(currentUserId).collection("favorites")
-
-        favoritesRef.getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Ошибка при получении избранного: \(error.localizedDescription)")
-                completion([])
-                return
-            }
-
-            if let snapshot = snapshot {
-                let favoriteProducts = snapshot.documents.compactMap { document -> FavoriteProduct? in
-                    do {
-                        let favoriteProduct = try document.data(as: FavoriteProduct.self)
-                        return favoriteProduct
-                    } catch {
-                        print("Ошибка при декодировании избранного продукта: \(error.localizedDescription)")
-                        return nil
-                    }
-                }
-                completion(favoriteProducts)
-            } else {
-                completion([])
-            }
-        }
-    }
-    
     
     func createOrder(cartItems: [CartItem], totalAmount: Double, deliveryMethod: String, deliveryCost: Double, deliveryAddress: Address, completion: @escaping (Bool) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else {
@@ -572,7 +357,7 @@ class DataManager: ObservableObject {
             completion([])
             return
         }
-
+        
         let db = Firestore.firestore()
         db.collection("users").document(userId).collection("addresses").getDocuments { snapshot, error in
             if let error = error {
@@ -625,7 +410,7 @@ class DataManager: ObservableObject {
             completion(false)
             return
         }
-
+        
         let db = Firestore.firestore()
         do {
             let encoder = Firestore.Encoder()
@@ -649,23 +434,23 @@ class DataManager: ObservableObject {
         }
     }
     
-   
+    
     func addAddress(_ address: Address, completion: @escaping (Bool) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("Ошибка: пользователь не авторизован")
             completion(false)
             return
         }
-
+        
         let db = Firestore.firestore()
         let docRef = db.collection("users")
             .document(userId)
             .collection("addresses")
             .document()
-
+        
         var newAddress = address
         newAddress.id = docRef.documentID
-
+        
         do {
             let encoder = Firestore.Encoder()
             let data = try encoder.encodeWithoutID(newAddress)
@@ -683,7 +468,7 @@ class DataManager: ObservableObject {
             completion(false)
         }
     }
-   
+    
     func deleteAddress(_ address: Address, completion: @escaping (Bool) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid, let addressId = address.id else {
             print("Ошибка: отсутствует идентификатор пользователя или адреса")
@@ -725,7 +510,6 @@ class DataManager: ObservableObject {
     }
     
     func uploadImage(data: Data, directory: String, completion: @escaping (Result<String, Error>) -> Void) {
-        // Формируем путь с указанной директорией и расширением .png
         let imagePath = "\(directory)/\(UUID().uuidString).png"
         let storageRef = Storage.storage().reference().child(imagePath)
         let metadata = StorageMetadata()
@@ -740,7 +524,6 @@ class DataManager: ObservableObject {
                 if let error = error {
                     completion(.failure(error))
                 } else if let url = url {
-                    // Возвращаем только последний компонент URL (имя файла)
                     completion(.success(url.lastPathComponent))
                 } else {
                     let err = NSError(domain: "UploadErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -751,61 +534,55 @@ class DataManager: ObservableObject {
     }
     
     static func uploadImage(data: Data, directory: String) async -> Result<String, Error> {
-            let storageRef = Storage.storage().reference()
-            // Формируем путь: например, "items_images/UUID.png" или "items_images/thumbnails/UUID.png"
-            let imagePath = "\(directory)/\(UUID().uuidString).png"
-            let imageRef = storageRef.child(imagePath)
-            let metadata = StorageMetadata()
-            metadata.contentType = "image/png"
-            
-            do {
-                _ = try await imageRef.putDataAsync(data, metadata: metadata)
-                let url = try await imageRef.downloadURL()
-                return .success(url.lastPathComponent)
-            } catch {
-                return .failure(error)
-            }
+        let storageRef = Storage.storage().reference()
+        let imagePath = "\(directory)/\(UUID().uuidString).png"
+        let imageRef = storageRef.child(imagePath)
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/png"
+        
+        do {
+            _ = try await imageRef.putDataAsync(data, metadata: metadata)
+            let url = try await imageRef.downloadURL()
+            return .success(url.lastPathComponent)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    static func uploadResizedPhotos(itemImage: UIImage?) async -> (original: String?, thumbnail: String?) {
+        guard let itemImage = itemImage else {
+            return (nil, nil)
         }
         
-        /// Функция, объединяющая изменение размеров и загрузку изображения.
-        /// Оригинальное изображение сохраняется в "items_images", миниатюра – в "items_images/thumbnails".
-        static func uploadResizedPhotos(itemImage: UIImage?) async -> (original: String?, thumbnail: String?) {
-            guard let itemImage = itemImage else {
-                return (nil, nil)
-            }
-            
-            let thumbnailSize: CGFloat = 150
-            let originalSize: CGFloat = 300
-            
-            guard let thumbnailImage = resizedImageToSquare(itemImage, size: thumbnailSize),
-                  // Используем pngData() для получения данных в формате PNG
-                  let thumbnailData = thumbnailImage.pngData(),
-                  let originalImage = resizedImageToSquare(itemImage, size: originalSize),
-                  let originalData = originalImage.pngData() else {
-                return (nil, nil)
-            }
-            
-            // Загружаем миниатюру в директорию "items_images/thumbnails"
-            let thumbnailResult = await uploadImage(data: thumbnailData, directory: "items_images/thumbnails")
-            // Загружаем оригинальное изображение в директорию "items_images"
-            let originalResult = await uploadImage(data: originalData, directory: "items_images")
-            
-            switch (originalResult, thumbnailResult) {
-            case (.success(let originalURL), .success(let thumbnailURL)):
-                return (originalURL, thumbnailURL)
-            default:
-                return (nil, nil)
-            }
+        let thumbnailSize: CGFloat = 150
+        let originalSize: CGFloat = 300
+        
+        guard let thumbnailImage = resizedImageToSquare(itemImage, size: thumbnailSize),
+              let thumbnailData = thumbnailImage.pngData(),
+              let originalImage = resizedImageToSquare(itemImage, size: originalSize),
+              let originalData = originalImage.pngData() else {
+            return (nil, nil)
         }
         
-        /// Функция для изменения размера изображения до заданного квадратного размера.
-        static func resizedImageToSquare(_ image: UIImage, size: CGFloat) -> UIImage? {
-            let newSize = CGSize(width: size, height: size)
-            let renderer = UIGraphicsImageRenderer(size: newSize)
-            return renderer.image { _ in
-                image.draw(in: CGRect(origin: .zero, size: newSize))
-            }
+        let thumbnailResult = await uploadImage(data: thumbnailData, directory: "items_images/thumbnails")
+        let originalResult = await uploadImage(data: originalData, directory: "items_images")
+        
+        switch (originalResult, thumbnailResult) {
+        case (.success(let originalURL), .success(let thumbnailURL)):
+            return (originalURL, thumbnailURL)
+        default:
+            return (nil, nil)
         }
+    }
+    
+    /// Функция для изменения размера изображения до заданного квадратного размера.
+    static func resizedImageToSquare(_ image: UIImage, size: CGFloat) -> UIImage? {
+        let newSize = CGSize(width: size, height: size)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
 }
 
 extension Firestore.Encoder {

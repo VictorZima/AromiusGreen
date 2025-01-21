@@ -52,6 +52,9 @@
 		28AB8DEE2C7C2346006A81C5 /* AppUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AB8DED2C7C2346006A81C5 /* AppUser.swift */; };
 		28AC36F32CDDEFD80076DF88 /* FavoritesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AC36F22CDDEFD80076DF88 /* FavoritesViewModel.swift */; };
 		28AC36F52CDF08DC0076DF88 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AC36F42CDF08DC0076DF88 /* HomeViewModel.swift */; };
+		28AED22E2D360B7E006429B8 /* DataManager+Favorites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AED22D2D360B7E006429B8 /* DataManager+Favorites.swift */; };
+		28AED2302D3618F9006429B8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AED22F2D3618F9006429B8 /* Logger.swift */; };
+		28AED2322D37DFD0006429B8 /* DataManager+Products.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AED2312D37DFD0006429B8 /* DataManager+Products.swift */; };
 		28BC02FE2CCB3CDC00E8ADE2 /* AdminView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BC02FD2CCB3CDC00E8ADE2 /* AdminView.swift */; };
 		28BC03002CCB421500E8ADE2 /* AddManufacturerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BC02FF2CCB421500E8ADE2 /* AddManufacturerView.swift */; };
 		28BC03022CCB71DD00E8ADE2 /* ProductLinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BC03012CCB71DD00E8ADE2 /* ProductLinesView.swift */; };
@@ -115,6 +118,9 @@
 		28AB8DED2C7C2346006A81C5 /* AppUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUser.swift; sourceTree = "<group>"; };
 		28AC36F22CDDEFD80076DF88 /* FavoritesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesViewModel.swift; sourceTree = "<group>"; };
 		28AC36F42CDF08DC0076DF88 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		28AED22D2D360B7E006429B8 /* DataManager+Favorites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataManager+Favorites.swift"; sourceTree = "<group>"; };
+		28AED22F2D3618F9006429B8 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		28AED2312D37DFD0006429B8 /* DataManager+Products.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataManager+Products.swift"; sourceTree = "<group>"; };
 		28BC02FD2CCB3CDC00E8ADE2 /* AdminView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminView.swift; sourceTree = "<group>"; };
 		28BC02FF2CCB421500E8ADE2 /* AddManufacturerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddManufacturerView.swift; sourceTree = "<group>"; };
 		28BC03012CCB71DD00E8ADE2 /* ProductLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductLinesView.swift; sourceTree = "<group>"; };
@@ -243,8 +249,19 @@
 				288762CD2C930ED800886A66 /* Double+Extensions.swift */,
 				28915EB52CA24F3600F7F04E /* UIColor+ConvenienceInit.swift */,
 				281B3DBF2D28D0BA00FC9867 /* QuantityFormatter.swift */,
+				28AED22F2D3618F9006429B8 /* Logger.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		28AED2262D36048E006429B8 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				288A98412C080B2A007ABC1C /* DataManager.swift */,
+				28AED22D2D360B7E006429B8 /* DataManager+Favorites.swift */,
+				28AED2312D37DFD0006429B8 /* DataManager+Products.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		28CBE4D92CD0BD25004987C3 /* ViewModel */ = {
@@ -288,7 +305,7 @@
 			isa = PBXGroup;
 			children = (
 				28FF49D32C0806AB00FA829C /* AromiusGreen_App.swift */,
-				288A98412C080B2A007ABC1C /* DataManager.swift */,
+				28AED2262D36048E006429B8 /* Services */,
 				28AB8DDF2C718E71006A81C5 /* AuthManager.swift */,
 				28915E932C9D5BE900F7F04E /* CartManager.swift */,
 				288A98432C080BB6007ABC1C /* Model */,
@@ -432,6 +449,7 @@
 				2813A3892CB74D56005A5E5D /* ShippingInfoView.swift in Sources */,
 				28CFAC412CE83E8D005B4DDB /* AdminSection.swift in Sources */,
 				28915E922C9D5B7500F7F04E /* CartItem.swift in Sources */,
+				28AED22E2D360B7E006429B8 /* DataManager+Favorites.swift in Sources */,
 				2813A38B2CB74E45005A5E5D /* Address.swift in Sources */,
 				288A98472C080BDC007ABC1C /* Product.swift in Sources */,
 				28FF49D42C0806AB00FA829C /* AromiusGreen_App.swift in Sources */,
@@ -445,10 +463,12 @@
 				288762CE2C930ED800886A66 /* Double+Extensions.swift in Sources */,
 				28CFAC432CE89312005B4DDB /* AddProductView.swift in Sources */,
 				28BC03022CCB71DD00E8ADE2 /* ProductLinesView.swift in Sources */,
+				28AED2322D37DFD0006429B8 /* DataManager+Products.swift in Sources */,
 				288762C32C9093F700886A66 /* AllProductsView.swift in Sources */,
 				28915EB82CA4E87500F7F04E /* CartItemCellView.swift in Sources */,
 				28CFAC452CE98CDC005B4DDB /* AddProductViewModel.swift in Sources */,
 				28037CFC2CC09CEA0046BD83 /* DeliveryMethodView.swift in Sources */,
+				28AED2302D3618F9006429B8 /* Logger.swift in Sources */,
 				28AB8DDC2C718B6D006A81C5 /* ProfileView.swift in Sources */,
 				288A984A2C080C1C007ABC1C /* Home.swift in Sources */,
 				288A98452C080BCD007ABC1C /* Category.swift in Sources */,

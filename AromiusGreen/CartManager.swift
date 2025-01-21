@@ -19,14 +19,14 @@ class CartManager: ObservableObject {
     func addToCart(product: Product, quantity: Int = 1) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не будет сохранена.")
+            debugLog("User not logged in. Cart cannot be updated")
             return
         }
         
         let cartRef = db.collection("users").document(userId).collection("carts")
         
         guard let productId = product.id else {
-            print("Ошибка: у продукта нет идентификатора")
+            debugLog("Error getting product ID")
             return
         }
         
@@ -40,17 +40,17 @@ class CartManager: ObservableObject {
                     "quantity": updatedItem.quantity
                 ]) { error in
                     if let error = error {
-                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                        debugLog("Error updating product quantity: \(error.localizedDescription)")
                     } else {
-                        print("Количество товара успешно обновлено")
+                        debugLog("Product quantity updated")
                     }
                 }
             } else {
-                print("Ошибка: отсутствует идентификатор элемента корзины.")
+                debugLog("Error: item ID not found")
             }
         } else {
             guard let thumbnailImage = product.thumbnailImage else {
-                print("Ошибка: некоторые свойства продукта отсутствуют.")
+                debugLog("Error: some product thumbnail image is missing")
                 return
             }
             
@@ -71,16 +71,16 @@ class CartManager: ObservableObject {
                 "thumbnailImage": newItem.thumbnailImage
             ]) { error in
                 if let error = error {
-                    print("Ошибка при добавлении товара: \(error.localizedDescription)")
+                    debugLog("Error adding product to cart: \(error.localizedDescription)")
                 } else {
-                    print("Товар успешно добавлен в корзину")
+                    debugLog("Product added to cart")
                     
                     if let documentId = ref?.documentID {
                         var newItemWithID = newItem
                         newItemWithID.id = documentId
                         self.cartItems.append(newItemWithID)
                     } else {
-                        print("Ошибка: не удалось получить идентификатор нового документа.")
+                        debugLog("Error getting document ID")
                     }
                 }
             }
@@ -90,7 +90,7 @@ class CartManager: ObservableObject {
     func increaseQuantity(of productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не будет сохранена.")
+            debugLog("User not logged in")
             return
         }
         
@@ -106,13 +106,13 @@ class CartManager: ObservableObject {
                     "quantity": updatedItem.quantity
                 ]) { error in
                     if let error = error {
-                        print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                        debugLog("Error updating quantity: \(error.localizedDescription)")
                     } else {
-                        print("Количество товара успешно увеличено")
+                        debugLog("Quantity updated")
                     }
                 }
             } else {
-                print("Ошибка: отсутствует идентификатор элемента корзины.")
+                debugLog("Error: cart's id is nil")
             }
         }
     }
@@ -120,7 +120,7 @@ class CartManager: ObservableObject {
     func decreaseQuantity(of productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не будет сохранена.")
+            debugLog("User is not logged in. Cart cannot be updated")
             return
         }
         
@@ -137,38 +137,37 @@ class CartManager: ObservableObject {
                         "quantity": updatedItem.quantity
                     ]) { error in
                         if let error = error {
-                            print("Ошибка при обновлении количества товара: \(error.localizedDescription)")
+                            debugLog("Error updating cart item: \(error.localizedDescription)")
                         } else {
-                            print("Количество товара успешно уменьшено")
+                            debugLog("Quantity updated successfully in Firestore")
                         }
                     }
                 } else {
-                    print("Ошибка: отсутствует идентификатор элемента корзины.")
+                    debugLog("Error cart's id is nil")
                 }
             } else {
-                // Если количество равно 1, удаляем товар
                 if let documentId = cartItems[index].id {
                     cartRef.document(documentId).delete { [weak self] error in
                         if let error = error {
-                            print("Ошибка при удалении товара: \(error.localizedDescription)")
+                            debugLog("Error deleting cart item: \(error.localizedDescription)")
                         } else {
-                            print("Товар успешно удален из Firestore")
+                            debugLog("Product deleted from cart successfully")
                             self?.cartItems.remove(at: index)
                         }
                     }
                 } else {
-                    print("Ошибка: отсутствует идентификатор элемента корзины.")
+                    debugLog("Error: cart's id is nil")
                 }
             }
         } else {
-            print("Товар с таким ID не найден в корзине")
+            debugLog("Product not found in cart")
         }
     }
 
     func removeFromCart(productId: String) {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не будет сохранена.")
+            debugLog("User is not signed in")
             return
         }
         
@@ -178,18 +177,17 @@ class CartManager: ObservableObject {
             if let itemId = cartItems[index].id {
                 cartRef.document(itemId).delete { [weak self] error in
                     if let error = error {
-                        print("Ошибка при удалении товара из корзины: \(error.localizedDescription)")
+                        debugLog("Error deleting product: \(error.localizedDescription)")
                     } else {
-                        print("Товар успешно удален из корзины в базе данных")
-                        // Только после успешного удаления из базы удаляем из локального массива
+                        debugLog("Product deleted successfully from the database.")
                         self?.cartItems.remove(at: index)
                     }
                 }
             } else {
-                print("Ошибка: отсутствует идентификатор элемента корзины.")
+                debugLog("Error: No item ID found")
             }
         } else {
-            print("Товар с таким ID не найден в корзине")
+            debugLog("Product not found in cart")
         }
     }
     
@@ -201,7 +199,7 @@ class CartManager: ObservableObject {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             DispatchQueue.main.async {
-                self.errorMessage = "Пользователь не авторизован, корзина не может быть загружена."
+                self.errorMessage = "User isn't logged in, cart can't be loaded."
             }
             return
         }
@@ -211,14 +209,14 @@ class CartManager: ObservableObject {
         cartRef.getDocuments { snapshot, error in
             if let error = error {
                 DispatchQueue.main.async {
-                    self.errorMessage = "Ошибка при загрузке корзины: \(error.localizedDescription)"
+                    self.errorMessage = "Error loading cart: \(error.localizedDescription)"
                 }
                 return
             }
             
             guard let snapshot = snapshot else {
                 DispatchQueue.main.async {
-                    self.errorMessage = "Нет данных в корзине."
+                    self.errorMessage = "Cart haven't data."
                     self.cartItems = []
                 }
                 return
@@ -232,73 +230,32 @@ class CartManager: ObservableObject {
         }
     }
     
-//    func loadCartFromDatabase() {
-//        let db = Firestore.firestore()
-//        guard let userId = Auth.auth().currentUser?.uid else {
-//            print("Пользователь не авторизован, корзина не может быть загружена.")
-//            return
-//        }
-//        
-//        let cartRef = db.collection("users").document(userId).collection("carts")
-//        
-//        cartRef.getDocuments { snapshot, error in
-//            if let error = error {
-//                print("Ошибка при загрузке корзины: \(error.localizedDescription)")
-//                return
-//            }
-//            
-//            if let snapshot = snapshot {
-//                self.cartItems = snapshot.documents.compactMap { document -> CartItem? in
-//                    let data = document.data()
-//                    
-//                    guard let productId = data["productId"] as? String,
-//                          let title = data["title"] as? String,
-//                          let price = data["price"] as? Double,
-//                          let quantity = data["quantity"] as? Int,
-//                          let thumbnailImage = data["thumbnailImage"] as? String else { return nil }
-//                    
-//                    return CartItem(
-//                        id: document.documentID,
-//                        productId: productId,
-//                        title: title,
-//                        price: price,
-//                        quantity: quantity,
-//                        thumbnailImage: thumbnailImage
-//                    )
-//                }
-//            }
-//        }
-//    }
-    
     func clearCart() {
         let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("Пользователь не авторизован, корзина не может быть очищена.")
+            debugLog("User not signed in")
             return
         }
 
         let cartRef = db.collection("users").document(userId).collection("carts")
         
-        // Удаление всех товаров из Firestore
         cartRef.getDocuments { snapshot, error in
             if let error = error {
-                print("Ошибка при очистке корзины: \(error.localizedDescription)")
+                debugLog("Error: \(error.localizedDescription)")
                 return
             }
 
             snapshot?.documents.forEach { document in
                 cartRef.document(document.documentID).delete { error in
                     if let error = error {
-                        print("Ошибка при удалении товара: \(error.localizedDescription)")
+                        debugLog("Error deleting product: \(error.localizedDescription)")
                     } else {
-                        print("Товар успешно удален")
+                        debugLog("Product deleted.")
                     }
                 }
             }
         }
-
-        // Очистка локальных данных
         cartItems.removeAll()
-        print("Корзина успешно очищена")
+        debugLog("Cart cleared.")
     }
 }

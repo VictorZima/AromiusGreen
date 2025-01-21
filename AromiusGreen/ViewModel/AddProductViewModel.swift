@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+@MainActor
 class AddProductViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var barcode: String = ""
@@ -46,8 +47,8 @@ class AddProductViewModel: ObservableObject {
             return
         }
         
-        guard let manufacturerId = selectedManufacturerId,
-              let manufacturerName = selectedManufacturerName else {
+        guard let _ = selectedManufacturerId,
+              let _ = selectedManufacturerName else {
             alertMessage = "Please select a manufacturer."
             showAlert = true
             return
@@ -57,15 +58,13 @@ class AddProductViewModel: ObservableObject {
 
         if let imageData = productImageData, let image = UIImage(data: imageData) {
             Task {
-                // Вызываем асинхронный метод для загрузки изображения и его превью
                 let result = await DataManager.uploadResizedPhotos(itemImage: image)
                 DispatchQueue.main.async { [weak self] in
-                    // Проверяем, что оба URL получены
                     if let originalUrl = result.original, let thumbnailUrl = result.thumbnail {
                         self?.createProduct(with: originalUrl, thumbnail: thumbnailUrl, purchasePrice: purchasePrice)
                     } else {
                         self?.isSaving = false
-                        self?.alertMessage = "Ошибка: не удалось загрузить изображения."
+                        self?.alertMessage = "Error: Failed to upload product image."
                         self?.showAlert = true
                     }
                 }
@@ -86,7 +85,7 @@ class AddProductViewModel: ObservableObject {
             manufacturer: ManufacturerSummary(id: selectedManufacturerId ?? "", title: selectedManufacturerName ?? "", logo: nil),
             productLine: ProductLineSummary(id: selectedProductLineId ?? "", title: selectedProductLineName ?? "", logo: nil),
             image: imageUrl,
-            thumbnailImage: thumbnail, // Здесь сохраняем URL миниатюры
+            thumbnailImage: thumbnail,
             price: Double(priceString) ?? 0.0,
             purchasePrice: purchasePrice
         )

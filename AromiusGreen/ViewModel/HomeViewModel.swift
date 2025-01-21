@@ -24,12 +24,11 @@ class HomeViewModel: ObservableObject {
         self.dataManager = dataManager
         fetchInitialData()
         
-        // Подписка на изменения продуктов
         dataManager.$products
             .receive(on: DispatchQueue.main)
             .sink { [weak self] products in
                 self?.products = products
-                print("HomeViewModel: Продукты обновлены: \(products.count)")
+                print("HomeViewModel: Products loaded: \(products.count)")
                 self?.checkIfDataLoaded()
             }
             .store(in: &cancellables)
@@ -37,22 +36,20 @@ class HomeViewModel: ObservableObject {
     
     func fetchInitialData() {
         guard let dataManager = dataManager else {
-            print("HomeViewModel: DataManager не установлен")
+            print("HomeViewModel: DataManager not initialized")
             return
         }
         
-        // Загрузка категорий один раз
         dataManager.fetchCategories { [weak self] fetchedCategories in
             DispatchQueue.main.async {
                 self?.categories = fetchedCategories
-                print("HomeViewModel: Категории обновлены: \(fetchedCategories.count)")
+                print("HomeViewModel: Categories loaded: \(fetchedCategories.count)")
                 self?.checkIfDataLoaded()
             }
         }
         
-        // Присвоение текущих продуктов из DataManager
         self.products = dataManager.products
-        print("HomeViewModel: Продукты загружены: \(products.count)")
+        print("HomeViewModel: Products loaded: \(products.count)")
     }
     
     var filteredProducts: [Product] {
@@ -67,13 +64,13 @@ class HomeViewModel: ObservableObject {
     
     func selectCategory(_ categoryId: String?) {
         selectedCategory = categoryId ?? "All"
-        print("HomeViewModel: Выбрана категория: \(selectedCategory ?? "All")")
+        print("HomeViewModel: Selected category: \(selectedCategory ?? "All")")
     }
     
     private func checkIfDataLoaded() {
         if !categories.isEmpty && !products.isEmpty {
             isDataLoaded = true
-            print("HomeViewModel: Все данные загружены")
+            print("HomeViewModel: All data loaded")
         }
     }
 }
